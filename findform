@@ -1,0 +1,42 @@
+#!/bin/ksh
+
+if [ "$#" != 1 ]
+then
+	printf "How to use:\n"
+	printf "httpanswer | findform 'form string for form identification' \n"
+	exit
+
+fi
+
+tempfile=$( mktemp )
+tempfile2=$( mktemp )
+cat  > "$tempfile"
+
+while true
+do
+
+  cat "$tempfile" | cutfile -af '<form' | cutfile -bf '</form>' >\
+      "$tempfile2"
+
+  chkstr=$( cat "$tempfile2" | wh_httpext -c '<form' '>' )
+  if echo "$chkstr" | grep -iq "$1"
+  then
+
+    cat "$tempfile2"
+    break
+
+  fi
+
+
+
+  if ! test -s "$tempfile2"
+  then
+    break
+  fi
+
+  cat "$tempfile" | cutfile -a '</form>' > "$tempfile2"
+  cat "$tempfile2" > "$tempfile"
+
+done
+
+rm -f "$tempfile" "$tempfile2"

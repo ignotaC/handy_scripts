@@ -1,0 +1,7 @@
+#!/bin/sh
+
+alias pman='man -M /usr/local/share/doc/posix/man'
+alias papropos='apropos -M /usr/local/share/doc/posix/man'
+alias pwhatis='whatis -M /usr/local/share/doc/posix/man'
+
+

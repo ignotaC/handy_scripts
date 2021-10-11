@@ -1,0 +1,2 @@
+ansiweather -l Warszawa -s true
+ansiweather -l Warszawa -F -s true

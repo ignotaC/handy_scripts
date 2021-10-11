@@ -1,0 +1,76 @@
+#!/bin/ksh
+
+if (( "$#" % 2 ))
+then
+	
+ printf "You must provide even ammount of arguments"
+ exit
+
+fi
+
+tempfile=$( mktemp )
+cat > "$tempfile"
+
+set -A arr_elem "$@"
+
+count=0
+value=''
+while read -r line
+do
+
+  if ! (( count % 4 ))
+  then
+
+    element_pos=0
+    detected=0
+    while (( element_pos < $#  ))
+    do
+
+      name="${arr_elem[element_pos]}"
+      if test -z "$name"
+      then
+        element_pos=$(( element_pos + 2 ))
+        continue
+      fi
+
+      if printf "%s" "$line" | grep -q "$name"
+      then
+        detected=1
+	value="${arr_elem[element_pos+1]}"
+        printf "%s\n" "$line"
+        unset 'arr_elem[element_pos]'
+        break
+      fi
+
+      element_pos=$(( element_pos + 2 ))
+
+    done
+
+    if (( detected == 0 ))
+    then
+        printf "%s\n" "$line"
+    fi
+
+    count=$(( count + 1 ))
+    continue
+
+  fi
+
+  if ! (( ( count + 2 ) % 4 ))
+  then
+    if test -z "$value"
+    then
+      printf "%s\n" "$line"
+    else
+      printf "%s\n" "$value"
+      value=''
+    fi
+  else
+    printf "%s\n" "$line"
+  fi
+
+  count=$(( count + 1 ))
+
+done < "$tempfile"
+
+rm -f "$tempfile" 

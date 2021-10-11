@@ -1,0 +1,13 @@
+#!/bin/ksh
+
+tempfile=$( mktemp )
+httphb_split -h | wh_httpext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+
+while read -r line
+do
+
+  printf "Cookie: %s\n" "$line"
+
+done < "$tempfile"
+
+rm -f "$tempfile"

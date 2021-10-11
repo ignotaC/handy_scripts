@@ -1,0 +1,3 @@
+#!/bin/ksh
+
+wh_httpext -c 'action="' '"' | htmlentities -d

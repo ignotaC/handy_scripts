@@ -1,0 +1,9 @@
+#! /bin/ksh
+
+var="$( mpc listall | \
+	awk -F'/' '{ print $NF }' | \
+       	grep -in "$1" )"
+var="${var%%:*}"
+mpc play $var
+
+

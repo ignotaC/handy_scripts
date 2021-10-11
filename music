@@ -1,0 +1,11 @@
+#! /bin/ksh
+
+
+mpd ~/muzyka/mpd.conf
+mpc update
+sleep 15
+mpc add /
+mpc shuffle on
+mpc random on
+mpc repeat on
+mpc play

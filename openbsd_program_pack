@@ -1,0 +1,37 @@
+
+pkg_add firefox
+
+pkg_add fvwm2
+pkg_add feh
+pkg_add compton
+
+pkg_add mupdf
+
+pkg_add tesseract
+
+pkg_add mpd
+pkg_add mpc
+pkg_add audacity
+
+pkg_add gimp
+pkg_add vlc
+pkg_add ffmpeg
+pkg_add x264
+pkg_add x265
+
+pkg_add clang
+pkg_add gcc
+pkg_add make
+pkg_add cmake
+pkg_add doxygen
+pkg_add git
+
+pkg_add pidgin
+
+pkg_add clutter
+pkg_add conky
+
+pkg_add vim
+
+pkg_add irssi
+pkg_add ansiweather

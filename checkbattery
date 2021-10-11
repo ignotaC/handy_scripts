@@ -1,0 +1,42 @@
+#!/bin/ksh
+
+while true
+do
+	
+	sleep 60
+	if [[ $(apm -a) == 1 ]]
+	then
+		batlife_chrg=$(apm -l)
+		if [[ $batlife_chrg != "unknown" ]]
+		then
+			if [[ $batlife_chrg -gt 85 ]]
+			then
+				aucat -i "$HOME/bin/binsounds/beep.wav"
+			fi
+		fi
+		continue
+	fi
+
+	batlife=$(apm -m)
+	if [[ $batlife != "unknown" ]]
+	then
+		if [[ $batlife -lt 40 ]]
+		then
+			aucat -i "$HOME/bin/binsounds/beep.wav"
+		fi
+		continue
+	fi
+
+	batlife=$(apm -l)
+	if [[ $batlife != "unknown" ]]
+	then
+		if [[ $batlife -lt 30 ]]
+		then
+			aucat -i "$HOME/bin/binsounds/beep.wav"
+		fi
+		continue
+	fi
+	aucat -i "$HOME/bin/binsounds/beep.wav"
+	
+done
+

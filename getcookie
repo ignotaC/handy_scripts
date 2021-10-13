@@ -1,13 +1,63 @@
 #!/bin/ksh
 
 tempfile=$( mktemp )
-httphb_split -h | wh_httpext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+tempfile2=$( mktemp )
+tempfile3=$( mktemp )
+
+cat | httphb_split -h | wh_httpext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+
+oldcookie="$1"
+echo "$oldcookie" | wh_httpext -c 'Cookie:' '' | tr " " "\n" | tr -d ";" | awk NF > "$tempfile2"
+
+while read -r cookie
+do
+
+  exist=0
+
+  oldc=$( echo "$cookie" | wh_httpext -c '' '='  ) 
+  while read -r line
+  do
+
+    newc=$( echo "$line" | wh_httpext -c '' '=' )
+    if [ "$oldc" == "$newc" ]
+    then
+
+      exist=1
+      break;
+
+    fi
+
+  done < "$tempfile"
+
+  if (( exist == 0 )) 
+  then
+    printf "%s\n" "$cookie" >> "$tempfile3"
+  fi
+
+done < "$tempfile2"
 
 while read -r line
 do
 
-  printf "Cookie: %s\n" "$line"
+  printf "%s\n" "$line" >> "$tempfile3"
 
 done < "$tempfile"
+
+
+printf "Cookie:"
+first=1;
+while read -r line
+do
+  
+  if (( first == 1 ))
+  then
+    printf " %s" "$line"
+    first=0
+    continue
+  fi
+
+  printf "; %s" "$line"
+
+done < "$tempfile3"
 
 rm -f "$tempfile"

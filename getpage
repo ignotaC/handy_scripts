@@ -41,7 +41,7 @@ req() {
 printf "GET %s HTTP/1.0\n" "$path"
 printf "Host: %s\n" "$host"
 printf "User-Agent: %s\n" "$ua"
-printf "%s" "$cookie"
+printf "%s\n" "$cookie"
 printf  "%s\n" 'Accept: text/html,application/xhtml+xml'\
 ',application/xml;q=0.9,image/webp,*/*;q=0.8'
 printf "%s\n" 'Accept-Language: en-US,en;q=0.5'

@@ -1,5 +1,7 @@
 
 pkg_add firefox
+pkg_add cups
+pkg_add rsync
 
 pkg_add fvwm2
 pkg_add feh

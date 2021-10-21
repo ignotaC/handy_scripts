@@ -36,6 +36,7 @@ else
   IP="$4"
 fi
 
+
 req() {
 
 printf "GET %s HTTP/1.0\n" "$path"
@@ -60,7 +61,7 @@ do
   if [[ "$status_code" == *301* ]]
   then
 
-	  url=$( cat "$tempfile2" | wh_httpext -c 'Location: ' '' | tr -d '\r\n' )
+	  url=$( cat "$tempfile2" | strext -c 'Location: ' '' | tr -d '\r\n' )
           setreq
           if test -z "$4"
           then

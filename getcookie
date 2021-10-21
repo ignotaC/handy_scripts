@@ -4,21 +4,21 @@ tempfile=$( mktemp )
 tempfile2=$( mktemp )
 tempfile3=$( mktemp )
 
-cat | httphb_split -h | wh_httpext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+cat | httphb_split -h | strext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
 
 oldcookie="$1"
-echo "$oldcookie" | wh_httpext -c 'Cookie:' '' | tr " " "\n" | tr -d ";" | awk NF > "$tempfile2"
+echo "$oldcookie" | strext -c 'Cookie:' '' | tr " " "\n" | tr -d ";" | awk NF > "$tempfile2"
 
 while read -r cookie
 do
 
   exist=0
 
-  oldc=$( echo "$cookie" | wh_httpext -c '' '='  ) 
+  oldc=$( echo "$cookie" | strext -c '' '='  ) 
   while read -r line
   do
 
-    newc=$( echo "$line" | wh_httpext -c '' '=' )
+    newc=$( echo "$line" | strext -c '' '=' )
     if [ "$oldc" == "$newc" ]
     then
 

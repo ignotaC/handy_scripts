@@ -18,7 +18,7 @@ do
   cat "$tempfile" | cutfile -af '<form' | cutfile -bf '</form>' >\
       "$tempfile2"
 
-  chkstr=$( cat "$tempfile2" | wh_httpext -c '<form' '>' )
+  chkstr=$( cat "$tempfile2" | strext -c '<form' '>' )
   if echo "$chkstr" | grep -iq "$1"
   then
 

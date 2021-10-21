@@ -5,29 +5,29 @@ tempfile2=$( mktemp )
 
 cat > "$tempfile2"
 
-cat "$tempfile2" | wh_httpext -c  '<input' '/>' -l > "$tempfile"
-cat "$tempfile2" | wh_httpext -c  '<textarea' '>' -l >> "$tempfile"
-cat "$tempfile2" | wh_httpext -c  '<button' '</button>' -l >> "$tempfile"
+cat "$tempfile2" | strext -c  '<input' '/>' -l > "$tempfile"
+cat "$tempfile2" | strext -c  '<textarea' '>' -l >> "$tempfile"
+cat "$tempfile2" | strext -c  '<button' '</button>' -l >> "$tempfile"
 
 start=1
 
 while read -r line
 do
 
-  name=$( echo "$line" | wh_httpext -c 'name="' '"' -l | tr -d "\n" )
+  name=$( echo "$line" | strext -c 'name="' '"' -l | tr -d "\n" )
   if test -z "$name"
   then
-    name=$( echo "$line" | wh_httpext -c 'name='\' \' -l | tr -d "\n" )
+    name=$( echo "$line" | strext -c 'name='\' \' -l | tr -d "\n" )
     if test -z "$name"
     then
       continue
     fi
   fi
 
-  value_ans=$( echo "$line" | wh_httpext -c 'value="' '"' | tr -d "\n" )
+  value_ans=$( echo "$line" | strext -c 'value="' '"' | tr -d "\n" )
   if test -z "$value_ans"
   then
-    value_ans=$( echo "$line" | wh_httpext -c 'value='\' \' | tr -d "\n" )
+    value_ans=$( echo "$line" | strext -c 'value='\' \' | tr -d "\n" )
   fi
 
   if (( start == 1 ))

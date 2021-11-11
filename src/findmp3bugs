@@ -1,0 +1,21 @@
+#!/bin/ksh
+
+tempfile=$( mktemp )
+
+find . -type f -iname '*.MP3' > "$tempfile"
+
+
+while read -r line
+do
+  
+  testvar=''
+  testvar=$( ffprobe -loglevel 'warning' "$line" 2>&1 )
+  if test -n "$testvar"
+  then
+    echo "$testvar"' - '"$line"
+  fi
+
+done < "$tempfile"
+
+rm -rf "$tempgile"
+

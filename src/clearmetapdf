@@ -1,0 +1,20 @@
+#!/bin/ksh
+
+if (( "$#" != 1 ))
+then
+	printf "no arguments\n"
+	exit
+fi
+
+tempfile=$(mktemp)
+tempfile2=$(mktemp)
+
+pdfinfo "$1"
+
+qpdf "$1" "$tempfile"
+exiftool '-all:all=' "$tempfile"
+qpdf "$tempfile" "$tempfile2"
+mv "$tempfile2" "$1"
+
+pdfinfo "$1"
+

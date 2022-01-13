@@ -1,0 +1,26 @@
+#!/bin/ksh
+
+if test -z "$1"
+then
+	echo "You need to pass domain name, for example domain.org"
+	exit
+fi
+
+tempfile=$( mktemp )
+
+for word in 'www' 'mail' 'mx' 'ns1' 'ns2' 'm' 'ns' 'mx0' \
+'mail2' 'remote' 'mx1' 'mailserver' 'smtp' 'blog' 'webmail' \
+'server' 'ns3' 'mx2' 'mail1' 'redbusprimarydns' 'redbussecondarydns' \
+'vpn' 'dev' 'mx7' 'secure' 'shop' 'ns4' 'cloud' 'ftp'  'mx01'  'api' \
+'portal' 'dns1' 'test' 'dns2' 'email' 'host' 'app' 'support' 'ww1' \
+'mailin2' 'mailin1' 'pop' 'bbs' 'web' 'r.1' 'r.2' 'r.3' 'forum' 'owa' 'wiki'
+do
+	printf "%s " "$word"
+	tor-resolve "$word"."$1" | tee -a "$tempfile"
+
+done
+
+printf "\nUNIQ SUMMARY:\n"
+sort "$tempfile" | uniq
+
+rm -f "$tempfile"

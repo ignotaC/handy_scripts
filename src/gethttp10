@@ -1,20 +1,42 @@
 #!/bin/ksh
 
-if [[ "$#" < 2 ]]
+if [[ "$#" < 1 ]]
 then
-  printf "Provide url and user-agent minimum.\n"
-  printf "Syntax: getpage url user-agent cookie IP\n"
+  printf "%s\n" "Provide url minimum."
+  printf "%s\n" "Syntax: getpage url user-agent cookie IP port disableHTTPS"
+  printf "%s\n" "disableHTTPS - leave it empty for https"
+  printf "%s\n" "Any argument passed will disable https"
   exit
 fi
 
 url="$1"
-ua="$2"
 cookie="$3"
+
+if test -z "$2"
+then
+  ua="gethttp10 bot, ""$( uname -srm )"
+else
+  ua="$2"
+fi
+
+if test -z "$7"
+then
+  https=1
+else
+  https=0
+fi
 
 setreq() {
 
 host="${url#*//}"
 host="${host%%/*}"
+
+if (( $1 == 1 ))
+then
+  httpscmd[0]='-c'
+  httpscmd[1]='-e'
+  httpscmd[2]="$host"
+fi
 
 path="${url#*//}"
 if [[ "$path" == */* ]]
@@ -27,7 +49,7 @@ fi
 
 }
 
-setreq
+setreq "$https"
 
 if test -z "$4"
 then
@@ -36,6 +58,29 @@ else
   IP="$4"
 fi
 
+if test -z "$6"
+then
+  TORport=9050
+else
+  TORport="$6"
+fi
+
+if (( https ))
+then
+  if test -z "$5"
+  then
+    port=443
+  else
+    port="$5"
+  fi
+else
+  if test -z "$5"
+  then
+    port=80
+  else
+    port="$5"
+  fi
+fi
 
 req() {
 
@@ -55,14 +100,28 @@ tempfile2=$( mktemp )
 while true
 do
  
-  req | httpreq_addcrlf | nc -w 10 -c -e "$host" -X '5' -x 'localhost:9050' "$IP" '443' > "$tempfile"
+  req | httpreq_addcrlf |
+  nc -w '10' "${httpscmd[@]}" "$IP" "$port" > "$tempfile"
   cat "$tempfile" | httphb_split -h > "$tempfile2"
   status_code=$( head -n 1 "$tempfile2" )
   if [[ "$status_code" == *301* ]]
   then
 
 	  url=$( cat "$tempfile2" | strext -c 'Location: ' '' | tr -d '\r\n' )
-          setreq
+	  if (( https == 0 ))
+	  then
+		 if [[ 'https' == "${url%%://*}" ]] 
+		 then 
+			 https=1
+			 if test -z "$5"
+			 then
+				 port=443
+			 fi
+		 fi
+	  fi
+
+
+          setreq "$https"
           if test -z "$4"
           then
             IP=$( tor-resolve "$host" )

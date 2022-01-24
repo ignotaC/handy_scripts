@@ -54,19 +54,12 @@ shift $(($OPTIND - 1))
 if (( $# != 1 ))
 then
 
-  printf "Broken commands or url"
+  printf "Broken commands or url\n"
   exit
 
 fi
 
-#echo "ostatnie:  $@"
-#printf "IP=%s\n" "$IP"
-#printf "httpsON=%s\n" "$httpsON"
-#printf "port=%s\n" "$port"
-#printf "TORport=%s\n" "$TORport"
-#printf "cookie=%s\n" "$cookie"
-#printf "ua=%s\n" "$ua"
-
+keepport="$port"
 
 url="$@"
 
@@ -145,7 +138,7 @@ do
 		 if [[ 'https' == "${url%%://*}" ]] 
 		 then 
 			 httpsON=1
-			 if [ ! "$port" ]
+			 if [ ! "$keepport" ]
 			 then
 				 port=443
 			 fi

@@ -1,37 +1,68 @@
 #!/bin/ksh
 
-if [[ "$#" < 1 ]]
+if (( "$#" < 1 ))
 then
-  printf "%s\n" "Provide url minimum."
-  printf "%s\n" "Syntax: getpage url user-agent cookie IP port disableHTTPS"
-  printf "%s\n" "disableHTTPS - leave it empty for https"
-  printf "%s\n" "Any argument passed will disable https"
+  printf "%s\n" "Provide at least url"
+  printf "%s\n\n" "Syntax: getpage [option] [url]"
+  printf "%s\n" "-d"
+  printf "\t%s\n" "Disable https, use http. Still if server will"
+  printf "\t%s\n" "point on 301 to https, https will be turned on and used"
+  printf "%s\n" "-i IP"
+  printf "\t%s\n" "Pass IP of the server."
+  printf "\t%s\n" "Thanks to this there is no need for resolving IP of domain."
+  printf "\t%s\n" "This can be also usefull if we know the real IP of server."
+  printf "\t%s\n" "So we can bypass cloudflare sillyness, for example."
+  printf "%s\n" "-p port"
+  printf "\t%s\n" "Pass port http server is expected to use"
+  printf "\t%s\n" "Default is: Http = 80, https = 443"
+  printf "%s\n" "-C cookie"
+  printf "\t%s\n" "Pass cookie lines, multiply lines are fine but,"
+  printf "\t%s\n" "You need to create whole cookie header line, like this:"
+  printf "\t\t%s\n" "Cookie: some=stuff"
+  printf "%s\n" "-U user-agent"
+  printf "\t%s\n" "Define what ever user agent you want to use"
   exit
 fi
 
-url="$1"
-cookie="$3"
+ua='gethttp10; '$( uname -prs )
+cookie=''
+IP='' 
+port=''
+httpsON=1
 
-if test -z "$2"
+while getopts di:p:C:U: optchr
+do
+
+  case "$optchr" in
+    d) httpsON=0 ;;
+    i) IP="$OPTARG" ;;
+    p) port="$OPTARG" ;;
+    C) cookie="$OPTARG" ;;
+    U) ua="$OPTARG" ;;
+    ?) exit ;;
+  esac
+
+done
+ 
+shift $(($OPTIND - 1))
+if (( $# != 1 ))
 then
-  ua="gethttp10 bot, ""$( uname -srm )"
-else
-  ua="$2"
+
+  printf "Broken commands or url\n"
+  exit
+
 fi
 
-if test -z "$7"
-then
-  https=1
-else
-  https=0
-fi
+keepport="$port"
+
+url="$@"
 
 setreq() {
 
 host="${url#*//}"
 host="${host%%/*}"
 
-if (( $1 == 1 ))
+if (( "$httpsON" ))
 then
   httpscmd[0]='-c'
   httpscmd[1]='-e'
@@ -49,36 +80,24 @@ fi
 
 }
 
-setreq "$https"
+setreq
 
-if test -z "$4"
+#resolv empty
+if [ ! "$IP" ]
 then
-  IP=$( tor-resolve "$host" )
-else
-  IP="$4"
+  IP=$( gethostipv -64 "$host" )
 fi
 
-if test -z "$6"
+if (( "$httpsON" ))
 then
-  TORport=9050
-else
-  TORport="$6"
-fi
-
-if (( https ))
-then
-  if test -z "$5"
+  if [ ! "$port" ]
   then
     port=443
-  else
-    port="$5"
   fi
 else
-  if test -z "$5"
+  if [ ! "$port" ]
   then
     port=80
-  else
-    port="$5"
   fi
 fi
 
@@ -108,12 +127,12 @@ do
   then
 
 	  url=$( cat "$tempfile2" | strext -c 'Location: ' '' | tr -d '\r\n' )
-	  if (( https == 0 ))
+	  if (( "$httpsON" == 0 ))
 	  then
 		 if [[ 'https' == "${url%%://*}" ]] 
 		 then 
-			 https=1
-			 if test -z "$5"
+			 httpsON=1
+			 if [ ! "$keepport" ]
 			 then
 				 port=443
 			 fi
@@ -121,12 +140,10 @@ do
 	  fi
 
 
-          setreq "$https"
-          if test -z "$4"
+          setreq
+          if [ ! "$IP" ]
           then
-            IP=$( tor-resolve "$host" )
-          else
-            IP="$4"
+            IP=$( gethostipv -64 "$host" )
           fi
 	  continue
 
@@ -136,5 +153,4 @@ do
 done
 
 cat "$tempfile"
-
 rm -f "$tempfile" "$tempfile2"

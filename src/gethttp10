@@ -109,7 +109,7 @@ setreq
 #resolv empty
 if [ ! "$IP" ]
 then
-  IP=$( gethostipv -64 "$host" )
+  IP=$( gethostipv -64 "$host" | head -n 1 )
 fi
 
 if (( "$httpsON" ))
@@ -167,7 +167,7 @@ do
           setreq
           if [ ! "$IP" ]
           then
-            IP=$( gethostipv -64 "$host" )
+            IP=$( gethostipv -64 "$host" | head -n 1 )
           fi
 	  continue
 

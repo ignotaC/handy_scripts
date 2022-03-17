@@ -24,4 +24,4 @@
 
 
 
-strext -c 'action="' '"' | htmlentities -d
+lext -c 'action="' '"' | htmlentities -d

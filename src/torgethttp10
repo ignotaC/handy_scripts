@@ -154,7 +154,7 @@ do
   if [[ "$status_code" == *301* ]]
   then
 
-	  url=$( cat "$tempfile2" | strext -c 'Location: ' '' | tr -d '\r\n' )
+	  url=$( cat "$tempfile2" | lext -c 'Location: ' '' | tr -d '\r\n' )
 	  if (( "$httpsON" == 0 ))
 	  then
 		 if [[ 'https' == "${url%%://*}" ]] 

@@ -1,0 +1,6 @@
+[submodule "src/smallsoft"]
+	path = src/smallsoft
+	url = https://github.com/ignotaC/smallsoft.git
+[submodule "smallsoft"]
+	path = smallsoft
+	url = https://github.com/ignotaC/smallsoft.git

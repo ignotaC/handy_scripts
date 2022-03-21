@@ -1,3 +1,4 @@
+mkdir bin
 
 # Clear the bin before putting there anything
 rm -f bin/*

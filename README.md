@@ -6,5 +6,5 @@
 
   After that bin directory is populated with scripts and small soft programs
 that are used by scripts.
-  You leave what evern wyou need and copy to your
+  You leave what ever you need and copy to your
 env PATH drectory. 

@@ -1,0 +1,3 @@
+[submodule "smallsoft"]
+	path = smallsoft
+	url = https://github.com/ignotaC/smallsoft.git

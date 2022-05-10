@@ -2,14 +2,13 @@ mkdir bin
 
 # Clear the bin before putting there anything
 rm -f bin/*
-
+# update submodules 
+git submodule update --init --recursive
 # Set up SmallSoft and copy binaries that are needed
 cd smallsoft
-git submodule init
-git submodule update
 make 
-# for now just copy everything
-cp bin/* ../bin
+# for now just move everything
+mv bin/* ../bin
 # go back
 cd ..
 

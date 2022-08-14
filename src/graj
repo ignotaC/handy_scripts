@@ -26,8 +26,8 @@
 
 var="$( mpc listall | \
 	awk -F'/' '{ print $NF }' | \
-       	grep -in "$1" )"
+       	grep -Fin "$1" )"
 var="${var%%:*}"
-mpc play $var
+mpc play "$var"
 
 

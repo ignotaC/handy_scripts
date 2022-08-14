@@ -1,0 +1,9 @@
+#!/bin/ksh
+
+if test -z "$1" 
+then
+	printf "You need to provide url" 1>&2
+	exit
+fi
+
+youtube-dl -x --audio-format 'mp3' --audio-quality 0 "$1"

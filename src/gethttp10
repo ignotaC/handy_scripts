@@ -27,7 +27,7 @@
 if (( "$#" < 1 ))
 then
   printf "%s\n" "Provide at least url"
-  printf "%s\n\n" "Syntax: getpage [option] [url]"
+  printf "%s\n\n" "Syntax: gethttp10 [option] [url]"
   printf "%s\n" "-d"
   printf "\t%s\n" "Disable https, use http. Still if server will"
   printf "\t%s\n" "point on 301 to https, https will be turned on and used"

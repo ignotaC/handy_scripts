@@ -150,33 +150,38 @@ do
   req | httpreq_addcrlf |
   nc -w '10' "${httpscmd[@]}" -X '5' -x 'localhost:'"$TORport" "$IP" "$port" > "$tempfile"
   cat "$tempfile" | httphb_split -h > "$tempfile2"
-  status_code=$( head -n 1 "$tempfile2" )
-  if [[ "$status_code" == *301* ]]
+  
+  url="$host"'/'$( cat "$tempfile2" | lext -c 'Location: ' '' | tr -d '\r\n' )
+  if test -z "$url"
   then
-
-	  url=$( cat "$tempfile2" | lext -c 'Location: ' '' | tr -d '\r\n' )
-	  if (( "$httpsON" == 0 ))
-	  then
-		 if [[ 'https' == "${url%%://*}" ]] 
-		 then 
-			 httpsON=1
-			 if [ ! "$keepport" ]
-			 then
-				 port=443
-			 fi
-		 fi
-	  fi
-
-
-          setreq
-          if [ ! "$IP" ]
-          then
-            IP=$( tor-resolve "$host" )
-          fi
-	  continue
-
+	  break;
   fi
-  break
+  
+  status_code=$( head -n 1 "$tempfile2" | lext -c ' ' ' ' )
+
+  if [[ "$status_code" != 3?? && "$status_code" != 201 ]]
+  then
+	  break;
+  fi
+
+  if (( "$httpsON" == 0 ))
+  	then
+	if [[ 'https' == "${url%%://*}" ]] 
+	then 
+		 httpsON=1
+		 if [ ! "$keepport" ]
+		 then
+			 port=443
+		 fi
+	fi
+  fi
+
+	
+  setreq
+  if [ ! "$IP" ]
+  then
+  	IP=$( tor-resolve "$host" )
+  fi
 
 done
 

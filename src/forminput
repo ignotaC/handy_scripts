@@ -29,7 +29,7 @@ tempfile2=$( mktemp )
 
 cat > "$tempfile2"
 
-cat "$tempfile2" | lext -c  '<input' '/>' -l > "$tempfile"
+cat "$tempfile2" | lext -c  '<input' '>' -l > "$tempfile"
 cat "$tempfile2" | lext -c  '<textarea' '>' -l >> "$tempfile"
 cat "$tempfile2" | lext -c  '<button' '</button>' -l >> "$tempfile"
 
@@ -41,7 +41,7 @@ do
   name=$( echo "$line" | lext -c 'name="' '"' -l | tr -d "\n" )
   if test -z "$name"
   then
-    name=$( echo "$line" | lext -c 'name='\' \' -l | tr -d "\n" )
+    name=$( echo "$line" | lext -c 'name=' ' ' -l | tr -d "\n" )
     if test -z "$name"
     then
       continue
@@ -51,7 +51,7 @@ do
   value_ans=$( echo "$line" | lext -c 'value="' '"' | tr -d "\n" )
   if test -z "$value_ans"
   then
-    value_ans=$( echo "$line" | lext -c 'value='\' \' | tr -d "\n" )
+    value_ans=$( echo "$line" | lext -c 'value=' ' ' | tr -d "\n" )
   fi
 
   if (( start == 1 ))

@@ -1,2 +1,2 @@
 
-rm bin/*
+rm -f ./bin/*

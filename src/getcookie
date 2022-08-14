@@ -84,4 +84,4 @@ do
 
 done < "$tempfile3"
 
-rm -f "$tempfile"
+rm -f "$tempfile" "$tempfile2" "$tempfile3"

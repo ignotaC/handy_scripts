@@ -26,8 +26,8 @@
 
 if [ "$#" != 1 ]
 then
-	printf "How to use:\n"
-	printf "httpanswer | findform 'form string for form identification' \n"
+	printf "How to use:\n" 2>&1
+	printf "httpanswer | findform 'form string for form identification' \n" 2>&1
 	exit
 
 fi

@@ -27,7 +27,7 @@
 if (( "$#" % 2 ))
 then
 	
- printf "You must provide even ammount of arguments"
+ printf "You must provide even ammount of arguments\n" 2>&1
  exit
 
 fi

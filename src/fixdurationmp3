@@ -33,27 +33,23 @@ find . -type f -iname '*.MP3' > "$tempfile"
 while read -r line
 do
   
-  echo "$line"
+  printf "%s\n" "$line"
   testvar=''
   testvar=$( ffprobe -loglevel 'warning' "$line" 2>&1 )
   if test -n "$testvar"
   then
 
-	  echo ""
-	  echo ""
-	  echo "$line"
+    printf "\n\n%s\n" "$line"
     rm -f "$tempdata"
     ffmpeg -nostdin -loglevel 'warning' -i "$line" -acodec copy "$tempdata"
-    echo ""
+    printf "\n"
     rm -f "$line"
     cp "$tempdata" "$line"
     printf "\nAttempted to fix %s\n\n" "$line"
-
-    echo "now"
 
   fi
 
 done < "$tempfile"
 
-rm -rf "$tempgile" "$tempdata"
+rm -f "$tempgile" "$tempdata"
 

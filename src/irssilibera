@@ -1,0 +1,81 @@
+#!/bin/ksh
+
+#
+#
+# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+session='ircsession'
+winname='irssi'
+
+tmux kill-session -t "$session" 2> /dev/null
+tmux new-session -s "$session" -n "$winname" -d
+tmux send-keys -t "$session":"$winname".0 'irssi -c irc.libera.chat' ENTER
+
+printf "Connecting to libera via irssi client.\n"
+printf "Enter your nick: "
+read nick
+printf "Enter your password: "
+read pass
+tput clear
+tmux send-keys -t "$session":"$winname".0 '/msg nickserv IDENTIFY '"$nick $pass" ENTER
+
+{ sleep 3; tmux detach-client -s "$session"; } &
+tmux attach-session -t "$session"
+
+printf "Did the client log in?\n"
+printf "Type y if all good.\n"
+
+read ans
+
+if [[ $ans != 'y' ]]
+then
+
+	tmux kill-session -t "$session" 2> /dev/null
+	printf "Fin\n"
+	exit
+
+fi
+
+channels="$HOME"'/.irclibera_channels'
+
+if ! test -f "$channels"
+then
+
+	printf "No %s file, creating it.\n" "$channels"
+	printf "Fill it with channels you want to auto join\n"
+	touch "$channels"
+
+fi
+
+while read -r chan
+do
+
+	if [[ -z $( echo $chan ) ]]
+	then
+		continue
+	fi
+	tmux send-keys -t "$session":"$winename".0 '/join '"$chan" ENTER
+
+done < "$channels"
+
+tmux attach-session -t "$session"

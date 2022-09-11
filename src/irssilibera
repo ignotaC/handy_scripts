@@ -33,9 +33,9 @@ tmux send-keys -t "$session":"$winname".0 'irssi -c irc.libera.chat' ENTER
 
 printf "Connecting to libera via irssi client.\n"
 printf "Enter your nick: "
-read nick
+read -r nick
 printf "Enter your password: "
-read pass
+read -r pass
 tput clear
 tmux send-keys -t "$session":"$winname".0 '/msg nickserv IDENTIFY '"$nick $pass" ENTER
 

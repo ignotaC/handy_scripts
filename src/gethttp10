@@ -63,7 +63,7 @@ do
     p) port="$OPTARG" ;;
     C) cookie="$OPTARG" ;;
     U) ua="$OPTARG" ;;
-    ?) exit ;;
+    ?) exit ;;  #TODO say something on broken option
   esac
 
 done

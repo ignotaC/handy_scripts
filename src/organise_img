@@ -76,5 +76,28 @@ done < "$tmpfile"
 
 
 
+find . -type f -iname '*.webp' > "$tmpfile"
+
+while read -r imgfile
+do
+
+	du -h "$imgfile"
+	newname=${imgfile%.*}'.jpg'
+	if test -e "$newname"
+	then
+		printf "File allready exist: %s\n" "$newname" 1>2
+		continue
+	fi
+	convert "$imgfile" "$newname"
+	mogrify -quality 85 "$newname"
+	rm "$imgfile"
+	du -h "$newname"
+
+done < "$tmpfile"
+
+
+
+
+
 
 

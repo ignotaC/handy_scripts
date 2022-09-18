@@ -13,4 +13,4 @@ mv bin/* ../bin
 cd ..
 
 # Now copy the handy_scripts to the bin
-cp src/* bin
+cp -v src/* bin

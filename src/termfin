@@ -27,7 +27,7 @@ do
 
 	sleep 15
 	list_ppid=$( ps -Ao ppid,command | grep "$$" | wc -l )
-	if (( "$list_ppid" == 2 ))
+	if (( "$list_ppid" == 3 ))
 	then
 		break
 	fi

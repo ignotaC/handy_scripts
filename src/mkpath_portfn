@@ -1,0 +1,133 @@
+#!/bin/ksh
+
+#
+#
+# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+tempfile=$( mktemp )
+#sort dirs so they won't fuckup if change at root dir is done
+find . -type d | sort -r  > "$tempfile"
+
+while IFS= read -r dirname
+do
+ 
+  name_beg=''
+  name="$( printf "%s" "$dirname" | tr -s '/' )"
+  if [[ "$dirname" == */ ]]
+  then
+
+    name="${name%/*}"
+
+  fi
+
+  if [[ "$name" == */*  ]]
+  then
+
+    name_beg="${name%/*}"
+    name="${name##*/}"
+
+  fi
+
+  name="$( printf %s "$name" | portable_filename )"
+
+  if test -n "$name_beg"
+  then
+	  
+	  name="$name_beg"'/'"$name"
+
+  fi
+
+
+  if [[ "$dirname" == "$name" ]]
+  then
+
+    continue
+
+  fi
+
+  keepname="$name"
+  count=2
+  while true
+  do
+  
+    if ! test -e "$name"
+    then
+
+      break
+
+    fi
+
+    name="$keepname""$count"
+    count=$(( count + 1 ))
+
+  done
+
+  mv -v "$dirname" "$name"
+
+done < "$tempfile"
+
+#files
+find . -type f > "$tempfile"
+
+while IFS= read -r file
+do
+ 
+  if [[ "$file" == */* ]]
+  then
+
+	  name_beg="${file%/*}"'/'
+	  name_end="${file##*/}"
+	  name_end="$( printf "%s" "$name_end" | portable_filename )"
+
+  else
+
+	name_begin=''
+  	name_end="$( printf "%s" "$file" | portable_filename )"
+
+  fi
+
+  name="$name_beg""$name_end"
+  if [[ "$name" == "$file" ]]
+  then
+	  continue
+  fi
+
+  count=2
+  while true
+  do
+  
+    if ! test -e "$name"
+    then
+
+      break
+
+    fi
+
+    name="$name_beg""$count""$name_end"
+    count=$(( count + 1 ))
+
+  done
+
+  mv -v "$file" "$name"
+
+done < "$tempfile"
+
+rm -f "$tempfile"

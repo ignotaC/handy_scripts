@@ -1,5 +1,7 @@
 # handy_scripts
 
+irc: ##ignota irc.libera.chat
+
  Scripts use ksh so you need it for stuff to work
  How to *install*:
    sh install.sh 

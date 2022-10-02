@@ -74,7 +74,7 @@ do
 
 	started_forks="$(( started_forks + 1 ))"
 	"$forkscript" "$sun_load" "$sun_ans" &
-	sleep 0.3 # slow start
+	sleep 1 # slow start
 	#TODO check if there are no errors on starting forks
 
 done

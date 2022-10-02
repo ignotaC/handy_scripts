@@ -1,0 +1,97 @@
+#! /bin/ksh
+
+noarg() {
+
+  printf "To use this program you need to pass three arguments.\n" >&2
+  printf "Script that will generate data\n" >&2
+  printf "Script that will be forked and use passed data\n" >&2
+  printf "Number of forks.\n" >&2
+  exit
+
+}
+
+if test -z "$1"
+then
+	noarg
+fi
+loadscript="$1"
+
+if test -z "$2"
+then
+	noarg
+fi
+forkscript="$2"
+
+if test -z "$3"
+then
+	noarg
+fi
+forknum="$3"
+
+# !!! TODO check if forknum is number
+
+#unix socket names we will use
+sun_load="$( mktemp )"
+rm -rf "$sun_load"
+sun_ans="$( mktemp )"
+rm -rf "$sun_ans"
+
+# TODO make it number use as port and name as sun
+
+basicscan_load()  {
+
+  if test -z "$1"
+  then
+  	  printf "Need load script name\n" >&2
+  	  #TODO need to stop on error
+  fi
+
+
+  if test -z "$2"
+  then
+  	  printf "Need load data socket name\n" >&2
+  	  #TODO need to stop on error
+  fi
+
+
+  # TODO error check tits
+
+  "$1" | sndlog_data -su "$2"
+
+}
+
+basicscan_load "$loadscript" "$sun_load" &
+
+# errocheck this somehow
+sndlog_data -lu "$sun_ans" &
+loadpid="$!"
+
+#main loop
+started_forks=1
+
+while (( "$started_forks" <= "$forknum" ))
+do
+
+	started_forks="$(( started_forks + 1 ))"
+	"$forkscript" "$sun_load" "$sun_ans" &
+	sleep 0.3 # slow start
+	#TODO check if there are no errors on starting forks
+
+done
+
+while true
+do
+
+	sleep 5
+	countjobs="$( jobs -p | wc -l )"
+	if (( countjobs == 1 ))
+	then
+		break
+	fi
+
+done
+
+kill -s SIGINT "$loadpid"
+
+rm -rf "$sun_load"
+rm -rf "$sun_ask"

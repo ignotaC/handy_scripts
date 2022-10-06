@@ -35,7 +35,7 @@ cat "$tempfile2" | lext -c  '<button' '</button>' -l >> "$tempfile"
 
 start=1
 
-while read -r line
+while IFS= read -r line
 do
 
   name=$( echo "$line" | lext -c 'name="' '"' -l | tr -d "\n" )

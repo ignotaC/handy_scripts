@@ -30,7 +30,7 @@ tempdata=$( mktemp )'.mp3'
 find . -type f -iname '*.MP3' > "$tempfile"
 
 
-while read -r line
+while IFS= read -r line
 do
   
   printf "%s\n" "$line"

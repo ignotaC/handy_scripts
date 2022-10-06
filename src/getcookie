@@ -33,7 +33,7 @@ cat | httphb_split -h | lext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
 oldcookie="$1"
 echo "$oldcookie" | lext -c 'Cookie:' '' | tr " " "\n" | tr -d ";" | awk NF > "$tempfile2"
 
-while read -r cookie
+while IFS= read -r cookie
 do
 
   exist=0

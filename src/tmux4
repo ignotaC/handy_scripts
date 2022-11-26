@@ -24,10 +24,17 @@
 
 
 
-session='t4'
+session='t4_'"$RANDOM"
 winname='tmux4'
 
-tmux kill-session -t "$session" 2> /dev/null
+while tmux has-session -t "$session"
+do
+
+	session='t4_'"$RANDOM"
+
+done
+
+
 tmux new-session -s "$session" -n "$winname" -d
 tmux detach-client -s "$session"
 tmux split-window -h

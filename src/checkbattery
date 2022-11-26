@@ -35,7 +35,7 @@ do
 		then
 			if [[ $batlife_chrg -gt 85 ]]
 			then
-				aucat -i "$sound"
+				aucat -v 35 -i "$sound"
 			fi
 		fi
 		continue
@@ -46,7 +46,7 @@ do
 	then
 		if [[ $batlife -lt 40 ]]
 		then
-			aucat -i "$sound"
+			aucat -v 35 -i "$sound"
 		fi
 		continue
 	fi
@@ -56,11 +56,11 @@ do
 	then
 		if [[ $batlife -lt 30 ]]
 		then
-			aucat -i "$sound"
+			aucat -v 35 -i "$sound"
 		fi
 		continue
 	fi
-	aucat -i "$sound"
+	aucat -v 35 -i "$sound"
 	
 done
 

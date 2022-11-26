@@ -22,16 +22,21 @@
 #
 #
 
-while true
-do
 
-	sleep 15
-	list_ppid=$( ps -Ao ppid,command | grep "$$" | wc -l )
-	if (( "$list_ppid" == 3 ))
-	then
-		break
-	fi
+if test -z "$1"
+then
+	printf "Pass port number tor will use.\n" >&2
+	exit 1
+fi
 
-done
+tordatadir="$( mktemp -d )"
+torrc="$( mktemp )"
 
-exit
+torportnumber=$(( $1 ))
+torproxy='localhost:'"$torportnumber"
+tor --quiet --SocksPort "$torportnumber" \
+  --DataDirectory "$tordatadir" -f "$torrc" &
+torpid=$!
+
+printf "%d" "$torpid"
+

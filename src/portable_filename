@@ -23,5 +23,5 @@
 #
 
 
-cat | rmvmb | tr -s '[:space:]' | tr -c '[:alnum:]._-' '_' | tr -s '_'
+cat | rmvmb -f | tr -s '[:space:]' | tr -c '[:alnum:].'"\n"'_-' '_' | tr -s '_'
 

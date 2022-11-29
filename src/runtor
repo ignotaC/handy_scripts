@@ -32,10 +32,9 @@ fi
 tordatadir="$( mktemp -d )"
 torrc="$( mktemp )"
 
-torportnumber=$(( $1 ))
-torproxy='localhost:'"$torportnumber"
+torportnumber="$(( $1 ))"
 tor --quiet --SocksPort "$torportnumber" \
-  --DataDirectory "$tordatadir" -f "$torrc" &
+  --DataDirectory "$tordatadir" -f "$torrc" > '/dev/null' &
 torpid=$!
 
 printf "%d" "$torpid"

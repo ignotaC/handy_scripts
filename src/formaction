@@ -23,13 +23,13 @@
 #
 
 
-tmp=$( mktemp );
+tmp="$( mktemp )"
 cat > "$tmp"
 
-ans=$( cat "$tmp" | lext -c 'form action="' '"' | htmlentities -d )
+ans="$( lext -c 'form action="' '"' < "$tmp" | htmlentities -d )"
 if test -z "$ans"
 then
-	ans=$( cat "$tmp" | lext -c 'form action=' ' ' | htmlentities -d )
+	ans="$( lext -c 'form action=' ' ' < "$tmp" | htmlentities -d )"
 fi
 
 printf "%s" "$ans"

@@ -35,7 +35,7 @@ fi
 tempfile=$( mktemp )
 cat > "$tempfile"
 
-set -A arr_elem "$@"
+set -A arr_elem -- "$@"
 
 count=0
 value=''

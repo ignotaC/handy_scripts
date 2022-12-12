@@ -22,7 +22,7 @@
 #
 #
 
-tempfile=$( mktemp )
+tempfile="$( mktemp )"
 #sort dirs so they won't fuckup if change at root dir is done
 find . -type d | sort -r  > "$tempfile"
 
@@ -99,7 +99,7 @@ do
 
   else
 
-	name_begin=''
+	name_beg=''
   	name_end="$( printf "%s" "$file" | portable_filename )"
 
   fi

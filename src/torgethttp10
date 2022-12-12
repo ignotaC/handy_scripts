@@ -72,7 +72,7 @@ do
 
 done
  
-shift $(($OPTIND - 1))
+shift $(( OPTIND - 1 ))
 if (( $# != 1 ))
 then
 
@@ -83,7 +83,10 @@ fi
 
 keepport="$port"
 
-url="$@"
+for url in "$@"
+do
+	true
+done
 
 setreq() {
 
@@ -113,7 +116,7 @@ setreq
 #resolv empty
 if [ ! "$IP" ]
 then
-  IP=$( tor-resolve "$host" )
+  IP="$( tor-resolve "$host" )"
 fi
 
 if (( "$httpsON" ))
@@ -141,23 +144,23 @@ printf "%s\n" 'Accept-Language: en-US,en;q=0.5'
 
 }
 
-tempfile=$( mktemp )
-tempfile2=$( mktemp )
+tempfile="$( mktemp )"
+tempfile2="$( mktemp )"
 
 while true
 do
  
   req | httpreq_addcrlf |
   nc -w '10' "${httpscmd[@]}" -X '5' -x 'localhost:'"$TORport" "$IP" "$port" > "$tempfile"
-  cat "$tempfile" | httphb_split -h > "$tempfile2"
+  httphb_split -h < "$tempfile" > "$tempfile2"
   
-  url="$host"'/'$( cat "$tempfile2" | lext -c 'Location: ' '' | tr -d '\r\n' )
+  url="$host"'/'"$( lext -c 'Location: ' '' < "$tempfile2" | tr -d '\r\n' )"
   if test -z "$url"
   then
 	  break;
   fi
   
-  status_code=$( head -n 1 "$tempfile2" | lext -c ' ' ' ' )
+  status_code="$( head -n 1 "$tempfile2" | lext -c ' ' ' ' )"
 
   if [[ "$status_code" != 3?? && "$status_code" != 201 ]]
   then
@@ -180,7 +183,7 @@ do
   setreq
   if [ ! "$IP" ]
   then
-  	IP=$( tor-resolve "$host" )
+  	IP="$( tor-resolve "$host" )"
   fi
 
 done

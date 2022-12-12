@@ -22,7 +22,7 @@
 #
 #
 
-tmpfile=$( mktemp )
+tmpfile="$( mktemp )"
 find . -type f -iname '*.jpg' > "$tmpfile"
 
 while IFS= read -r imgfile
@@ -41,10 +41,10 @@ while read -r imgfile
 do
 
 	du -h "$imgfile"
-	newname=${imgfile%.*}'.jpg'
+	newname="${imgfile%.*}"'.jpg'
 	if test -e "$newname"
 	then
-		printf "File allready exist: %s\n" "$newname" 1>2
+		printf "File allready exist: %s\n" "$newname" >&2
 		continue
 	fi
 	convert "$imgfile" "$newname"
@@ -61,10 +61,10 @@ while read -r imgfile
 do
 
 	du -h "$imgfile"
-	newname=${imgfile%.*}'.jpg'
+	newname="${imgfile%.*}"'.jpg'
 	if test -e "$newname"
 	then
-		printf "File allready exist: %s\n" "$newname" 1>2
+		printf "File allready exist: %s\n" "$newname" >&2
 		continue
 	fi
 	convert "$imgfile" "$newname"
@@ -82,10 +82,10 @@ while read -r imgfile
 do
 
 	du -h "$imgfile"
-	newname=${imgfile%.*}'.jpg'
+	newname="${imgfile%.*}"'.jpg'
 	if test -e "$newname"
 	then
-		printf "File allready exist: %s\n" "$newname" 1>2
+		printf "File allready exist: %s\n" "$newname" >&2
 		continue
 	fi
 	convert "$imgfile" "$newname"

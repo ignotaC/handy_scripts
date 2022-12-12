@@ -54,7 +54,7 @@ setreq
 
 if test -z "$4"
 then
-  IP=$( tor-resolve "$host" )
+  IP="$( tor-resolve "$host" )"
 else
   IP="$4"
 fi
@@ -76,8 +76,5 @@ printf "%s%d\n" 'Content-Length: ' "${#postbody}"
 
 }
 
-tempfile=$( mktemp )
-tempfile2=$( mktemp )
- 
 { req | httpreq_addcrlf; printf "%s" "$postbody"; } |\
   nc -w 10 -c -e "$host" -X '5' -x 'localhost:9050' "$IP" '443'

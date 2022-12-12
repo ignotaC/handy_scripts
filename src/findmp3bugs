@@ -24,7 +24,7 @@
 
 
 
-tempfile=$( mktemp )
+tempfile="$( mktemp )"
 
 find . -type f -iname '*.MP3' > "$tempfile"
 
@@ -33,7 +33,7 @@ while IFS= read -r line
 do
   
   testvar=''
-  testvar=$( ffprobe -loglevel 'warning' "$line" 2>&1 )
+  testvar="$( ffprobe -loglevel 'warning' "$line" 2>&1 )"
   if test -n "$testvar"
   then
     echo "$testvar"' - '"$line"
@@ -41,5 +41,5 @@ do
 
 done < "$tempfile"
 
-rm -rf "$tempgile"
+rm -rf "$tempfile"
 

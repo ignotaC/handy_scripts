@@ -30,8 +30,8 @@ then
 	exit
 fi
 
-tempfile=$(mktemp)
-tempfile2=$(mktemp)
+tempfile="$( mktemp )"
+tempfile2="$( mktemp )"
 
 pdfinfo "$1"
 
@@ -42,3 +42,4 @@ mv "$tempfile2" "$1"
 
 pdfinfo "$1"
 
+rm -f "$tempfile" "$tempfile2"

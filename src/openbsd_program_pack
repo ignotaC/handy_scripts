@@ -58,8 +58,6 @@ pkg_add make
 pkg_add cmake
 pkg_add git
 
-pkg_add pidgin
-
 pkg_add clutter
 pkg_add conky
 

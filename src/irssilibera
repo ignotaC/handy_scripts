@@ -45,7 +45,7 @@ tmux attach-session -t "$session"
 printf "Did the client log in?\n"
 printf "Type y if all good.\n"
 
-read ans
+read -r ans
 
 if [[ $ans != 'y' ]]
 then
@@ -67,14 +67,14 @@ then
 
 fi
 
-while read -r chan
+while IFS= read -r chan
 do
 
-	if [[ -z $( echo $chan ) ]]
+	if [[ -z "$chan" ]]
 	then
 		continue
 	fi
-	tmux send-keys -t "$session":"$winename".0 '/join '"$chan" ENTER
+	tmux send-keys -t "$session":"$winname".0 '/join '"$chan" ENTER
 
 done < "$channels"
 

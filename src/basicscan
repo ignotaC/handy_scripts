@@ -56,9 +56,7 @@ forknum="$3"
 
 #unix socket names we will use
 sun_load="$( mktemp )"
-rm -rf "$sun_load"
 sun_ans="$( mktemp )"
-rm -rf "$sun_ans"
 
 # TODO make it number use as port and name as sun
 
@@ -118,4 +116,4 @@ done
 kill -s SIGINT "$loadpid"
 
 rm -rf "$sun_load"
-rm -rf "$sun_ask"
+rm -rf "$sun_ans"

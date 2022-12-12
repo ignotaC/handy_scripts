@@ -30,7 +30,7 @@ do
 	sleep 60
 	if [[ $(apm -a) == 1 ]]
 	then
-		batlife_chrg=$(apm -l)
+		batlife_chrg="$(apm -l)"
 		if [[ $batlife_chrg != "unknown" ]]
 		then
 			if [[ $batlife_chrg -gt 85 ]]
@@ -41,7 +41,7 @@ do
 		continue
 	fi
 
-	batlife=$(apm -m)
+	batlife="$(apm -m)"
 	if [[ $batlife != "unknown" ]]
 	then
 		if [[ $batlife -lt 40 ]]
@@ -51,7 +51,7 @@ do
 		continue
 	fi
 
-	batlife=$(apm -l)
+	batlife="$(apm -l)"
 	if [[ $batlife != "unknown" ]]
 	then
 		if [[ $batlife -lt 30 ]]

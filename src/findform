@@ -32,17 +32,17 @@ then
 
 fi
 
-tempfile=$( mktemp )
-tempfile2=$( mktemp )
+tempfile="$( mktemp )"
+tempfile2="$( mktemp )"
 cat  > "$tempfile"
 
 while true
 do
 
-  cat "$tempfile" | cutfile -af '<form' | cutfile -bf '</form>' >\
+  cutfile -af '<form' < "$tempfile" | cutfile -bf '</form>' >\
       "$tempfile2"
 
-  chkstr=$( cat "$tempfile2" | lext -c '<form' '>' )
+  chkstr=$( lext -c '<form' '>' < "$tempfile2" )
   if echo "$chkstr" | grep -iq "$1"
   then
 
@@ -58,7 +58,7 @@ do
     break
   fi
 
-  cat "$tempfile" | cutfile -a '</form>' > "$tempfile2"
+  cutfile -a '</form>' < "$tempfile" > "$tempfile2"
   cat "$tempfile2" > "$tempfile"
 
 done

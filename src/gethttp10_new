@@ -1,0 +1,189 @@
+#!/bin/ksh
+
+#
+#
+# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+if (( "$#" < 1 ))
+then
+  printf "%s\n" "Provide at least url"
+  printf "%s\n\n" "Syntax: gethttp10 [option] [url]"
+  printf "%s\n" "-d"
+  printf "\t%s\n" "Disable https, use http. Still if server will"
+  printf "\t%s\n" "point on 301 to https, https will be turned on and used"
+  printf "%s\n" "-i IP"
+  printf "\t%s\n" "Pass IP of the server."
+  printf "\t%s\n" "Thanks to this there is no need for resolving IP of domain."
+  printf "\t%s\n" "This can be also usefull if we know the real IP of server."
+  printf "\t%s\n" "So we can bypass cloudflare sillyness, for example."
+  printf "%s\n" "-p port"
+  printf "\t%s\n" "Pass port http server is expected to use"
+  printf "\t%s\n" "Default is: Http = 80, https = 443"
+  printf "%s\n" "-C cookie"
+  printf "\t%s\n" "Pass cookie lines, multiply lines are fine but,"
+  printf "\t%s\n" "You need to create whole cookie header line, like this:"
+  printf "\t\t%s\n" "Cookie: some=stuff"
+  printf "%s\n" "-U user-agent"
+  printf "\t%s\n" "Define what ever user agent you want to use"
+  exit
+fi
+
+ua='gethttp10-'"$( uname -prs | tr -s '[:blank:]' '-' )"
+cookie=''
+IP='' 
+port=''
+httpsON=1
+
+while getopts di:p:C:U: optchr
+do
+
+  case "$optchr" in
+    d) httpsON=0 ;;
+    i) IP="$OPTARG" ;;
+    p) port="$OPTARG" ;;
+    C) cookie="$OPTARG" ;;
+    U) ua="$OPTARG" ;;
+    ?) exit ;;  #TODO say something on broken option
+  esac
+
+done
+ 
+shift $(( OPTIND - 1 ))
+if (( $# != 1 ))
+then
+
+  printf "Broken commands or url\n"
+  exit
+
+fi
+
+keepport="$port"
+
+#Set url on last parameter
+for url in "$@"
+do
+	true
+done
+
+setreq() {
+
+host="${url#*//}"
+host="${host%%/*}"
+
+if (( "$httpsON" ))
+then
+  httpscmd[0]='-servername'
+  httpscmd[1]="$host"
+fi
+
+path="${url#*//}"
+if [[ "$path" == */* ]]
+then
+  path="${path#*/}"
+  path='/'"$path"
+else
+  path='/'
+fi
+
+}
+
+setreq
+
+#resolv empty
+if [ ! "$IP" ]
+then
+  IP="$( gethostipv -64 "$host" | head -n 1 )"
+fi
+
+if (( "$httpsON" ))
+then
+  if [ ! "$port" ]
+  then
+    port=443
+  fi
+else
+  if [ ! "$port" ]
+  then
+    port=80
+  fi
+fi
+
+req() {
+
+printf "GET %s HTTP/1.0\n" "$path"
+printf "Host: %s\n" "$host"
+printf "User-Agent: %s\n" "$ua"
+printf "%s\n" "$cookie"
+printf  "%s\n" 'Accept: text/html,application/xhtml+xml'\
+',application/xml;q=0.9,image/webp,*/*;q=0.8'
+printf "%s\n" 'Accept-Language: en-US,en;q=0.5'
+
+}
+
+tempfile="$( mktemp )"
+tempfile2="$( mktemp )"
+
+while true
+do
+ 
+  req | httpreq_addcrlf |\
+  s_client "${httpscmd[@]}" -connect "$IP"':'"$port" > "$tempfile"
+  httphb_split -h < "$tempfile" > "$tempfile2"
+
+  url="$host"'/'"$( lext -c 'Location: ' '' < "$tempfile2" | tr -d '\r\n' )"
+  if test -z "$url"
+  then
+	  break;
+  fi
+  
+  status_code="$( head -n 1 "$tempfile2" | lext -c ' ' ' ' )"
+
+  if [[ "$status_code" != 3?? && "$status_code" != 201 ]]
+  then
+	  break;
+  fi
+
+  url="$( lext -c 'Location: ' '' < "$tempfile2" | tr -d '\r\n' )"
+  if (( "$httpsON" == 0 ))
+  	then
+	if [[ 'https' == "${url%%://*}" ]] 
+	then 
+		 httpsON=1
+		 if [ ! "$keepport" ]
+		 then
+			 port=443
+		 fi
+	fi
+  fi
+
+	
+  setreq
+  if [ ! "$IP" ]
+  then
+        IP="$( gethostipv -64 "$host" | head -n 1 )"
+  fi
+
+done
+
+cat "$tempfile"
+rm -f "$tempfile" "$tempfile2"

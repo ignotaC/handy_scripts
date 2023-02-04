@@ -1,0 +1,238 @@
+#!/bin/ksh
+
+
+#
+#
+# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+
+# binaries check
+
+if ! test -n "$1"
+then
+
+	printf "You need to pass backup list filename\n" >&2
+	exit
+
+fi
+
+echo in
+
+chk_command() {
+
+  if ! command -v "$1"
+  then
+	  printf "Backup script needs this program to work: %s\n" "$1" >&2
+	  exit
+  fi
+
+}
+
+printf "Checking up programs you need to run this script\n"
+
+chk_command 'rsync' 
+chk_command 'git' 
+if ! command -v "./bp"
+then
+	printf "You must call bp program from it's working directory\n" >&2
+	exit
+fi
+
+printf "All binaries required are present\n"
+
+# files check
+
+chk_dir() {
+
+  # create if not exists
+  if ! test -e "$1"
+  then
+
+    mkdir "$1"
+    printf "Created %s dir\n" "$1"
+    return
+
+  fi
+
+  # if it is not dir alert and exit
+  if ! test -d "$1"
+  then
+
+    printf "%s is not directory, move this file from path\n" "$1" >&2
+    exit
+
+  fi
+
+}
+
+is_file() {
+
+  # create if not exists
+  if ! test -e "$1"
+  then
+
+    printf "Files: %s, does not exist\n" "$1" >&2
+    exit
+
+  fi
+
+  # if it is not normal file,  alert and exit
+  if ! test -f "$1"
+  then
+
+    printf "%s is not regular file, move this file from path\n" "$1" >&2
+    exit
+
+  fi
+
+}
+
+bp_path='backup'
+bp_list="$1"
+git_path='.git'
+
+chk_dir "$bp_path"
+chk_dir "$git_path"
+is_file "$bp_list"
+
+gitcmd() {
+
+  git --git-dir='../'"$git_path" "$@"
+
+}
+
+# create git if it does not exists
+cd "$bp_path" || exit
+if ! gitcmd rev-parse 2>/dev/null >/dev/null
+then
+
+  gitcmd init 2>/dev/null
+
+else
+
+  printf "Git repository exists\n"
+
+fi
+
+# create directories if they do not exist
+
+tp="$( mktemp || exit )"
+tp2="$( mktemp || exit )"
+tp3="$( mktemp || exit )"
+
+awk 'NF' '../'"$bp_list" > "$tp" || exit
+
+while IFS= read -r file_to_backup
+do
+
+  if ! test -e "$file_to_backup"
+  then
+
+    printf "File to backup %s does not exist\n" "$file_to_backup" >&2
+    exit
+
+  fi
+
+done < "$tp"
+
+
+while IFS= read -r file_to_backup
+do
+
+  set -e || exit
+  bp_place="${file_to_backup##*/}"
+  set +e || exit
+
+  printf "%s\n%s\n" "$bp_place" "$file_to_backup"  >> "$tp2" || exit
+  printf "%s\n" "$bp_place"  >> "$tp3" || exit
+
+done < "$tp"
+
+chk_path="$( sort "$tp3" | uniq -d )"
+
+# protect from paths being the same after parsing path to backup
+if test -n "$chk_path"
+then
+
+  printf "You can't have paths like '/ab/cd/c' and '/c', note 'c' at end repeates\n" >&2
+  sort "$tp3" | uniq -d > "$tp" 
+
+  while IFS= read -r line
+  do
+
+    fail=0
+
+    while IFS= read -r broken
+    do
+
+      if [[ "$broken" == "$line" ]]
+      then
+
+        fail=1
+	break
+
+      fi
+
+    done < "$tp"
+
+    if (( ! fail ))
+    then
+
+      continue
+
+    fi
+
+    read -r line
+    printf "%s\n" "$line"
+
+  done < "$tp2"
+
+fi
+
+while IFS= read -r file_to_backup
+do
+
+  printf "Scaning for backup: %s\n" "$file_to_backup"
+  set -e || exit
+  bp_place="${file_to_backup##*/}"
+  set +e || exit
+  if ! rsync -aiP --delete "$file_to_backup" "$bp_place"
+  then
+
+    printf "Error on rsync when coping %s\n" "$file_to_backup" >&2
+    exit
+  # TODO - uwzględnij --ignore-errors
+  fi
+
+done < "$tp"
+
+
+gitcmd add . || exit
+gitcmd commit -m ok
+
+printf "\nCurrent backup dates:\n"
+gitcmd log --date=format:'%H:%M:%S   %d/%m/%Y' | grep -F 'Date' || exit
+
+cd ..
+
+rm -f "$tp" "$tp2" "$tp3" 

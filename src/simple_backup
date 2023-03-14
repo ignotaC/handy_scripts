@@ -1,31 +1,7 @@
 #!/bin/ksh
 
-
-#
-#
-# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
-#
-# Permission to use, copy, modify, and distribute 
-# this software for any purpose with or without fee
-# is hereby granted, provided that the above copyright
-# notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
-# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
-# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
-# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
-# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
-# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
-# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
-# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
-# OF THIS SOFTWARE.
-#
-#
-
-
-
-
+printf "ATTENTION!!! You must call bp program from dir\n\
+you want to create backup directory\n"
 # binaries check
 
 if ! test -n "$1"
@@ -35,8 +11,6 @@ then
 	exit
 
 fi
-
-echo in
 
 chk_command() {
 
@@ -52,11 +26,6 @@ printf "Checking up programs you need to run this script\n"
 
 chk_command 'rsync' 
 chk_command 'git' 
-if ! command -v "./bp"
-then
-	printf "You must call bp program from it's working directory\n" >&2
-	exit
-fi
 
 printf "All binaries required are present\n"
 
@@ -126,6 +95,7 @@ cd "$bp_path" || exit
 if ! gitcmd rev-parse 2>/dev/null >/dev/null
 then
 
+  printf "Initializating git repository"
   gitcmd init 2>/dev/null
 
 else
@@ -134,13 +104,33 @@ else
 
 fi
 
+git_usrdata="$( gitcmd config user.name )"
+if test -z "$git_usrdata"
+then
+
+  gitcmd config user.name "backup_user"
+
+fi
+
+printf "Uzywany user gita: %s\n" "$git_usrdata"
+
+git_usrdata="$( gitcmd config user.email )"
+if test -z "$git_usrdata"
+then
+
+  gitcmd config user.email "backupxxx@xx.xxx"
+
+fi
+
+printf "Uzywany mail gita: %s\n" "$git_usrdata"
+
 # create directories if they do not exist
 
 tp="$( mktemp || exit )"
 tp2="$( mktemp || exit )"
 tp3="$( mktemp || exit )"
 
-awk 'NF' '../'"$bp_list" > "$tp" || exit
+awk 'NF' '../'"$bp_list" | tr -d "\r" > "$tp" || exit
 
 while IFS= read -r file_to_backup
 do
@@ -218,14 +208,10 @@ do
   set +e || exit
   if ! rsync -aiP --delete "$file_to_backup" "$bp_place"
   then
-
     printf "Error on rsync when coping %s\n" "$file_to_backup" >&2
-    exit
-  # TODO - uwzględnij --ignore-errors
   fi
 
 done < "$tp"
-
 
 gitcmd add . || exit
 gitcmd commit -m ok

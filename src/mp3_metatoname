@@ -1,0 +1,72 @@
+#!/bin/ksh
+
+#
+# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+temp="$( mktemp )"
+
+find . -type f -iname '*.mp3' > "$temp"
+
+while IFS= read -r line
+do
+
+  old_name="${line%.*}"
+  eye_data="$( eyeD3 "$line" )"
+  album="$( printf "%s" "$eye_data" | grep -iF 'album: ' | lext -c 'lbum: ' ''  )"
+  if test -z "$( echo $album | tr -d  {:blank:})"
+  then
+
+    album=''
+
+  else
+
+    album="$album"' '
+
+  fi
+
+  artist="$( printf "%s" "$eye_data" | grep -iF 'artist: ' | lext -c 'tist: ' ''  )"
+  if test -z "$( echo $artist | tr -d  {:blank:})"
+  then
+
+    artist=''
+
+  else
+
+    artist="$artist"' '
+
+  fi
+
+  title="$( printf "%s" "$eye_data" | grep -iF 'title: ' | lext -c 'itle: ' ''  )"
+  if test -z "$( echo $title | tr -d  {:blank:})"
+  then
+
+    title="$old_name"
+
+  fi
+
+  newname="$( printf "%s%s%s.mp3" "$artist" "$album" "$title" | tr -s '\n' ' ' )"
+  mv -v "$line" "$newname"
+
+done < "$temp"
+
+rm -f "$temp"

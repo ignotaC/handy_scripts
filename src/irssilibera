@@ -67,6 +67,8 @@ then
 
 fi
 
+sleep 1 # sometiems first channel join command gets lost
+
 while IFS= read -r chan
 do
 
@@ -77,5 +79,7 @@ do
 	tmux send-keys -t "$session":"$winname".0 '/join '"$chan" ENTER
 
 done < "$channels"
+
+tmux send-keys -t "$session":"$winname".0 '/nick '"$nick" ENTER
 
 tmux attach-session -t "$session"

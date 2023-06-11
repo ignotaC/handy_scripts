@@ -2,7 +2,7 @@
 
 #
 #
-# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2023 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -22,24 +22,43 @@
 #
 #
 
-
-
-if (( "$#" != 1 ))
+if ! utilchk 'pdfinfo' 'qpdf' 'exiftool'
 then
-	printf "no arguments\n"
-	exit
+
+  printf "There are utilities missing to run this script\n" >&2
+  exit 1
+
 fi
 
-tempfile="$( mktemp )"
-tempfile2="$( mktemp )"
+if (( "$#" != 0 ))
+then
 
-pdfinfo "$1"
+  printf "This program does not take any arguments\n" >&2
+  printf "It runs in current directory\n" >&2
+  exit 2
 
-qpdf "$1" "$tempfile"
-exiftool '-all:all=' "$tempfile"
-qpdf "$tempfile" "$tempfile2"
-mv "$tempfile2" "$1"
+fi
 
-pdfinfo "$1"
 
-rm -f "$tempfile" "$tempfile2"
+tf="$( mktemp )"
+tf2="$( mktemp )"
+tf3="$( mktemp )"
+
+find . -type f -iname '*.pdf' > "$tf"
+
+while IFS= read -r pdffile
+do
+
+  printf "PDF file: %s\n" "$pdffile"
+  pdfinfo "$pdffile"
+
+  qpdf "$pdffile" "$tf2"
+  exiftool '-all:all=' "$tf2"
+  qpdf "$tf2" "$tf3"
+  mv "$tf3" "$pdffile"
+
+  pdfinfo "$pdffile"
+
+done < "$tf"
+
+rm -f "$tf" "$tf2" "$tf3"

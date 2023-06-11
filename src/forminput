@@ -31,27 +31,29 @@ cat > "$tempfile2"
 
 lext -c  '<input' '>' -l < "$tempfile2" > "$tempfile"
 lext -c  '<textarea' '>' -l < "$tempfile2" >> "$tempfile"
-lext -c  '<button' '</button>' -l < "$tempfile2" >> "$tempfile"
+fext  '<button' '</button>' "$tempfile2" >> "$tempfile"
+fext  '<select' '</select>' "$tempfile2" >> "$tempfile"
+
 
 start=1
 
 while IFS= read -r line
 do
 
-  name="$( echo "$line" | lext -c 'name="' '"' -l | tr -d "\n" )"
+  name="$( printf "%s" "$line" | lext -c 'name="' '"' -l | tr -d "\n" )"
   if test -z "$name"
   then
-    name="$( echo "$line" | lext -c 'name=' ' ' -l | tr -d "\n" )"
+    name="$( printf "%s" "$line" | lext -c 'name=' ' ' -l | tr -d "\n" )"
     if test -z "$name"
     then
       continue
     fi
   fi
 
-  value_ans="$( echo "$line" | lext -c 'value="' '"' | tr -d "\n" )"
+  value_ans="$( printf "%s" "$line" | lext -c 'value="' '"' | tr -d "\n" )"
   if test -z "$value_ans"
   then
-    value_ans="$( echo "$line" | lext -c 'value=' ' ' | tr -d "\n" )"
+    value_ans="$( printf "%s" "$line" | lext -c 'value=' ' ' | tr -d "\n" )"
   fi
 
   if (( start == 1 ))

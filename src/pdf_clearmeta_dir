@@ -35,7 +35,7 @@ then
 
   printf "This program does not take any arguments\n" >&2
   printf "It runs in current directory\n" >&2
-  exit 2
+  exit 1
 
 fi
 
@@ -53,10 +53,10 @@ do
 
   pdfinfo "$pdffile"
 
-  qpdf "$pdffile" "$tf2"
-  exiftool '-all:all=' "$tf2"
-  qpdf "$tf2" "$tf3"
-  mv "$tf3" "$pdffile"
+  ! qpdf "$pdffile" "$tf2" && exit 3
+  ! exiftool '-all:all=' "$tf2" && exit 3
+  ! qpdf "$tf2" "$tf3" && exit 3
+  ! mv "$tf3" "$pdffile" && exit 3
 
   pdfinfo "$pdffile"
 

@@ -1,8 +1,8 @@
-#!/bin/ksh
+#! /bin/ksh
 
 #
 #
-# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2023 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -22,52 +22,47 @@
 #
 #
 
-
-if test -z "$1"
+if ! utilchk ssconvert
 then
-	printf "Need argument to erase from input form\n" 1>&2 
-	exit
+
+  printf "Missing utility\n" >&2
+  exit 1
+
 fi
 
-first=1
-found=0
-ampersand=0;
+csvfile_existed=0
+tempfile="$( mktemp )"
 
+find . -type f\
+  \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
+  > "$tempfile"
 
-while IFS= read -r line
+while IFS= read -r file
 do
 
-  if (( "$found" == 0 ))
+  newname="${file%.*}"'.csv'
+  
+  if test -e "$newname"
   then
- 	if [ "$line" == "$1" ]
-	then
-		read -r line
-	  	read -r line
-	  	found=1;
-	  	continue
-  	fi
+
+    printf "File %s already exists\n" "$newname" >&2
+    csvfile_existed=1
+    continue
+
   fi
 
-  if [[ "$line" == '&' ]]
-  then
-	  ampersand=1
-	  continue;
-  fi
+  ! ssconvert "$file" "$newname" && exit 3
+  pritnf "%s -> %s\n" "$file" "$newname"
 
-  if (( ampersand == 1 ))
-  then
-	  if (( "$first" == 0 ))
-	  then
-		ampersand=0
-	  	printf "&\n"
-	  else
-		ampersand=0
-	  fi
-  fi
+done < "$tempfile"
 
-  first=0
-  printf "%s\n" "$line"
+rm -f "$tempfile"
 
-done
+if (( csvfile_existed ))
+then
 
+  printf "Some csv files already existed,\n" >&2
+  printf  "program did not overwrite them\n" >&2
+  exit 4
 
+fi

@@ -30,11 +30,11 @@ then
 
 fi
 
-if (( "$#" != 1 ))
+if (( $# != 1 ))
 then
 
   printf "You must provide one pdf path, only one argument\n" >&2
-  exit 2
+  exit 1
 
 fi
 
@@ -42,7 +42,7 @@ if ! test -e "$1"
 then
 
   printf "File does not exist\n" >&2
-  exit 3
+  exit 2
 
 fi
 
@@ -50,7 +50,7 @@ if ! test -f "$1"
 then
 
   printf "File is not regular file\n" >&2
-  exit 4
+  exit 2
 
 fi
 
@@ -62,10 +62,10 @@ tf2="$( mktemp )"
 printf "PDF file: %s\n" "$1"
 pdfinfo "$1"
 
-qpdf "$1" "$tf"
-exiftool '-all:all=' "$tf"
-qpdf "$tf" "$tf2"
-mv "$tf2" "$1"
+! qpdf "$1" "$tf" && exit 3
+! exiftool '-all:all=' "$tf" && exit 3
+! qpdf "$tf" "$tf2" && exit 3
+! mv "$tf2" "$1" && exit 3
 
 pdfinfo "$1"
 

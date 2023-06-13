@@ -22,29 +22,47 @@
 #
 #
 
+if ! utilchk ssconvert
+then
 
+  printf "Missing utility\n" >&2
+  exit 1
+
+fi
+
+csvfile_existed=0
 tempfile="$( mktemp )"
 
-find . -maxdepth 1 -type f > "$tempfile"
+find . -maxdepth 1 -type f\
+  \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
+  > "$tempfile"
 
 while IFS= read -r file
 do
 
-  if [[ "$file" == *'.xls' ]]
+  newname="${file%.*}"'.csv'
+  
+  if test -e "$newname"
   then
 
-    newname=${file%.*}'.csv'
-    if test -e "$newname"
-    then
-	    printf "File %s already exists\n" "$newname" >&2
-	    continue
-    fi
-    ssconvert "$file" "$newname"
-    pritnf "%s -> %s\n" "$file" "$newname"
-    rm -f "$file"
+    printf "File %s already exists\n" "$newname" >&2
+    csvfile_existed=1
+    continue
 
   fi
+
+  ! ssconvert "$file" "$newname" && exit 3
+  pritnf "%s -> %s\n" "$file" "$newname"
 
 done < "$tempfile"
 
 rm -f "$tempfile"
+
+if (( csvfile_existed ))
+then
+
+  printf "Some csv files already existed,\n" >&2
+  printf  "program did not overwrite them\n" >&2
+  exit 4
+
+fi

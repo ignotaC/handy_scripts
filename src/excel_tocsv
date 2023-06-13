@@ -1,4 +1,4 @@
-#!/bin/ksh
+#! /bin/ksh
 
 #
 #
@@ -22,43 +22,47 @@
 #
 #
 
-if ! utilchk 'pdfinfo' 'qpdf' 'exiftool'
+if ! utilchk ssconvert
 then
 
-  printf "There are utilities missing to run this script\n" >&2
+  printf "Missing utility\n" >&2
   exit 1
 
 fi
 
-if (( "$#" != 0 ))
+if (( $# != 1 ))
 then
 
-  printf "This program does not take any arguments\n" >&2
-  printf "It runs in current directory\n" >&2
+  printf "This program expects one argument\n" >&2
+  printf "Excel file to convert\n" >&2
   exit 1
 
 fi
 
+if ! test -e "$1"
 
-tf="$( mktemp )"
-tf2="$( mktemp )"
-tf3="$( mktemp )"
+  printf "Specified file does not exist\n" >&2
+  exit 2
 
-find . -type f -iname '*.pdf' > "$tf"
+then
 
-while IFS= read -r pdffile
-do
+if ! test -f "$1"
 
-  printf "PDF file: %s\n" "$pdffile"
-  pdfinfo "$pdffile"
+  printf "Specified file is not regular file\n" >&2
+  exit 2
 
-  qpdf "$pdffile" "$tf2"
-  exiftool '-all:all=' "$tf2"
-  qpdf "$tf2" "$tf3"
-  mv "$tf3" "$pdffile"
+then
 
-  pdfinfo "$pdffile"
+newname="${1%.*}"'.csv'
+  
+if test -e "$newname"
+then
 
-done < "$tf"
+  printf "File %s already exists\n" "$newname" >&2
+  exit 4 
 
-rm -f "$tf" "$tf2" "$tf3"
+fi
+
+! ssconvert "$file" "$newname" && exit 3
+pritnf "%s -> %s\n" "$file" "$newname"
+

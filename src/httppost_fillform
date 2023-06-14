@@ -28,7 +28,7 @@ if (( "$#" % 2 ))
 then
 	
  printf "You must provide even ammount of arguments\n" 2>&1
- exit
+ exit 1
 
 fi
 
@@ -57,7 +57,7 @@ do
         continue
       fi
 
-      if printf "%s" "$line" | grep -q "$name"
+      if printf "%s" "$line" | grep -qF "$name"
       then
         detected=1
 	value="${arr_elem[element_pos+1]}"

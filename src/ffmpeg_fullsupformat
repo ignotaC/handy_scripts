@@ -2,7 +2,7 @@
 
 #
 #
-# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2023 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -22,22 +22,32 @@
 #
 #
 
+if ! utilchk 'ffmpeg'
+then
 
+  printf "Missing utilities.\n" >&2
+  exit 1
+
+fi
 
 tempfile="$( mktemp )"
 
-find . -type f -iname '*.MP3' > "$tempfile"
-
+ffmpeg -nostdin -formats 2>/dev/null > "$tempfile"
 
 while IFS= read -r line
 do
-  
-  testvar=''
-  testvar="$( ffprobe -loglevel 'warning' "$line" 2>&1 )"
-  if test -n "$testvar"
+
+  ans="$( printf "$line" | awk '{ print $1 }' )"
+  if [[ "$ans" != 'DE' ]]
   then
-    echo "$testvar"' - '"$line"
+
+    continue
+
   fi
+
+  printf '*.'
+  echo "$line" | awk '{ print $2 }'
+
 
 done < "$tempfile"
 

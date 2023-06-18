@@ -39,7 +39,7 @@ read -r pass
 tput clear
 tmux send-keys -t "$session":"$winname".0 '/msg nickserv IDENTIFY '"$nick $pass" ENTER
 
-{ sleep 3; tmux detach-client -s "$session"; } &
+{ sleep 6; tmux detach-client -s "$session"; } &
 tmux attach-session -t "$session"
 
 printf "Did the client log in?\n"
@@ -55,6 +55,8 @@ then
 	exit
 
 fi
+
+sleep 1
 
 channels="$HOME"'/.irclibera_channels'
 

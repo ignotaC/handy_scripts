@@ -1,0 +1,132 @@
+#!/usr/local/bin/bash
+
+#
+#
+# Copyright (c) 2023 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+if ! utilchk 'ffprobe' 'ffmpeg' 'ffmpeg_fullsupformat' \
+  'find_inamelist'
+then
+
+  printf "Missing utilities.\n" >&2
+  exit 1
+
+fi
+
+if (( $# != 0 ))
+then
+
+  printf "This program does not take any arguments\n" >&2
+  exit 1
+
+fi
+
+
+tf="$( mktemp )"
+tf2="$( mktemp )"
+tf3="$( mktemp )"
+
+ffmpeg_fullsupformat > "$tf3"
+find_inamelist . -type f < "$tf3" > "$tf2"
+
+while IFS= read -r mfile
+do
+
+  detected_format="$( ffprobe -show_format "$mfile" 2>/dev/null \
+    | grep -Fi 'format_name' | tr -s "[:upper:]" "[:lower:]" )"
+  detected_format="${detected_format##*=}"
+
+  if [[ $detected_format == '' ]]
+  then
+
+    printf "Can't detect file format: %s\n" \
+     "$mfile" >&2
+    continue
+
+  fi
+
+  file_format="$( echo "${mfile##*.}" | tr -s "[:upper:]" "[:lower:]" )"
+
+  if [[ $detected_format != "$file_format" ]]
+  then
+
+    printf "File extension does not match detected file format\n" >&2
+    printf "File extension: %s\nFile format: %s\n" \
+      "$file_format" "$detected_format" >&2
+    new_mfile="${mfile%.*}"'.'"$detected_format"
+    if test -e "$new_mfile"
+    then
+
+      printf "Can't chnage file name to proper extension\n" >&2
+      printf "File under name: %s already exist\n" "$new_mfile" >&2
+      continue
+
+    fi
+
+    printf "Changing file extension to correct format\n" >&2
+    mv -v "$mfile" "$new_mfile" 1>&2
+    mfile="$new_mfile"
+    file_format="$detected_format"
+
+  fi
+
+  tr -s "[:upper:]" "[:lower:]" < "$tf3" > "$tf"
+  supported=0
+
+  while IFS= read -r format
+  do
+
+    format='.'"${format#*.}"
+    if [[ '.'$file_format == *"$format" ]]
+    then
+
+      supported=1
+      break
+
+    fi
+
+  done < "$tf"
+
+  if (( supported == 0 ))
+  then
+
+    printf "File format: is not supported by ffmpeg.\n" "" >&2
+    exit 3
+
+  fi
+
+  testvar=''
+  testvar="$( ffprobe -loglevel 'warning' "$mfile" 2>&1 )"
+  if test -n "$testvar"
+  then
+
+    printf "Attempted to fix %s\n" "$mfile" >&2
+    ffmpeg -nostdin -y -loglevel 'warning' -i "$mfile" \
+      -f "$file_format" -acodec copy "$tf"
+    cp "$tf" "$mfile"
+
+  fi
+
+done < "$tf2"
+
+rm -f "$tf" "$tf2" "$tf3"

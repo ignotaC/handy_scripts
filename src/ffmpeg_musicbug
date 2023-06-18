@@ -1,0 +1,125 @@
+#!/usr/local/bin/bash
+
+#
+#
+# Copyright (c) 2023 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+
+
+if ! utilchk 'ffprobe' 'ffmpeg' 'ffmpeg_fullsupformat'
+then
+
+  printf "Missing utilities.\n" >&2
+  exit 1
+
+fi
+
+if (( $# != 1 ))
+then
+
+  printf "You need to provide one argument - file path\n" >&2
+  exit 1
+
+fi
+
+if ! test -e "$1"
+then
+
+  printf "File %s does not exist.\n" "$1" >&2
+  exit 2
+
+fi
+
+
+if ! test -f "$1"
+then
+
+  printf "File %s is not regular file.\n" "$1" >&2
+  exit 2
+
+fi
+
+mfile="$1"
+
+tf="$( mktemp )"
+
+detected_format="$( ffprobe -show_format "$mfile" 2>/dev/null \
+  | grep -Fi 'format_name' | tr -s "[:upper:]" "[:lower:]" )"
+detected_format="${detected_format##*=}"
+
+if [[ $detected_format == '' ]]
+then
+
+  printf "Can't detect file format: %s\n" \
+   "$mfile" >&2
+  exit 3
+
+fi
+
+file_format="$( echo "${mfile##*.}" | tr -s "[:upper:]" "[:lower:]" )"
+
+if [[ $detected_format != "$file_format" ]]
+then
+
+  printf "File extension does not match detected file format\n" >&2
+  printf "File extension: %s\nFile format: %s\n" \
+    "$file_format" "$detected_format" >&2
+  exit 3
+
+fi
+
+ffmpeg_fullsupformat | tr -s "[:upper:]" "[:lower:]" > "$tf"
+supported=0
+
+while IFS= read -r format
+do
+
+  format='.'"${format#*.}"
+  if [[ '.'$file_format == *"$format" ]]
+  then
+
+    supported=1
+    break
+
+  fi
+
+done < "$tf"
+
+if (( supported == 0 ))
+then
+
+  printf "File format: is not supported by ffmpeg.\n" "" >&2
+  exit 3
+
+fi
+
+testvar=''
+testvar="$( ffprobe -loglevel 'warning' "$mfile" 2>&1 )"
+if test -n "$testvar"
+then
+
+  printf "Detected bugs in file: %s\n" "$mfile" >&2
+  exit 3
+
+fi
+
+rm -f "$tf"
+

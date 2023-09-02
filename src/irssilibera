@@ -39,7 +39,7 @@ read -r pass
 tput clear
 tmux send-keys -t "$session":"$winname".0 '/msg nickserv IDENTIFY '"$nick $pass" ENTER
 
-{ sleep 6; tmux detach-client -s "$session"; } &
+{ sleep 10; tmux detach-client -s "$session"; } &
 tmux attach-session -t "$session"
 
 printf "Did the client log in?\n"
@@ -56,7 +56,6 @@ then
 
 fi
 
-sleep 1
 
 channels="$HOME"'/.irclibera_channels'
 
@@ -69,8 +68,9 @@ then
 
 fi
 
-sleep 1 # sometiems first channel join command gets lost
+sleep 2 # sometiems first channel join command gets lost
 
+tmux send-keys -t "$session":"$winname".0 '/nick '"$nick" ENTER
 while IFS= read -r chan
 do
 
@@ -82,6 +82,5 @@ do
 
 done < "$channels"
 
-tmux send-keys -t "$session":"$winname".0 '/nick '"$nick" ENTER
 
 tmux attach-session -t "$session"

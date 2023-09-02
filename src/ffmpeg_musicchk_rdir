@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/bin/ksh
 
 #
 #
@@ -47,7 +47,7 @@ tf2="$( mktemp )"
 tf3="$( mktemp )"
 
 ffmpeg_fullsupformat > "$tf3"
-find_inamelist . -maxdepth 1 -type f < "$tf3" > "$tf2"
+find_inamelist . -type f < "$tf3" > "$tf2"
 
 found_bugs=0
 
@@ -73,6 +73,7 @@ do
   if [[ $detected_format != "$file_format" ]]
   then
 
+    printf "Problem with format on file: %s\n" "$mfile" >&2
     printf "File extension does not match detected file format\n" >&2
     printf "File extension: %s\nFile format: %s\n" \
       "$file_format" "$detected_format" >&2

@@ -22,9 +22,7 @@
 #
 #
 
-
-
-if ! utilchk 'sh_getopt'
+if ! utilchk  'sh_getopt'
 then
 
   printf "Missing utilities.\n" >&2
@@ -32,6 +30,17 @@ then
 
 fi
 
+set -A ksh_args -- "$@"
 
+# Last passed argument should be options so we save it and remove
+options_str="${ksh_args[ ${#ksh_args[@]} - 1 ]}"
+printf "options: %s\n" "$options_str"
+unset  "ksh_args[ "${#ksh_args[@]}" - 1 ]"
 
+if ! sh_getopt "${ksh_args[@]}" "$options_str"
+then
+
+  printf "Failed on sh_getopt command" >&2
+
+fi
 

@@ -22,7 +22,7 @@
 #
 #
 
-if ! utilchk ssconvert
+if ! utilchk ssconvert optchk
 then
 
   printf "Missing utility\n" >&2
@@ -30,39 +30,122 @@ then
 
 fi
 
-if (( $# != 1 ))
+manual()  {
+
+  printf "This program expects at leats one argument\n" >&2
+  printf "Possible arguments:" >&2
+  printf "options followed at end by Excel file/path to convert\n" >&2
+  printf "Options:\n" >&2
+  printf "-R recurse directory for excel files\n" >&2
+  printf "-d use only excel files in this directory\n" >&2
+  printf "-h show this text\n" >&2
+  exit 1  # TODO add -- to invoke end of options
+
+}
+
+if (( $# < 1 )) 
 then
 
-  printf "This program expects one argument\n" >&2
-  printf "Excel file to convert\n" >&2
-  exit 1
+  manual
 
 fi
 
-if ! test -e "$1"
+set -A argslist -- "$@"
 
-  printf "Specified file does not exist\n" >&2
-  exit 2
+# Last passed argument should be path so we save it and remove
+path_arg="${argslist[ ${#argslist[@]} - 1 ]}"
+unset  "argslist[ ${#argslist[@]} - 1 ]"
 
+optlist="dRh"
+optstr="$( optchk "${argslist[@]}" "$optlist" )" || manual
+
+opt_d=0
+opt_R=0
+[[ $optstr == *'h'* ]] && manual
+[[ $optstr == *'d'* ]] && opt_d=1
+[[ $optstr == *'R'* ]] && opt_R=1
+
+if (( opt_d && opt_R ))
 then
 
-if ! test -f "$1"
+  printf "You can't set both d and R options\n" >&2
 
-  printf "Specified file is not regular file\n" >&2
-  exit 2
+fi
 
+# regular file
+if ! (( opt_d || opt_R ))
 then
 
-newname="${1%.*}"'.csv'
+  if ! test -f "$path_arg"
+  then
+
+    printf "Specified file is not regular file\n" >&2
+    exit 2
+
+  fi
+
+  newname="${1%.*}"'.csv'
   
-if test -e "$newname"
-then
+  if test -e "$newname"
+  then
 
-  printf "File %s already exists\n" "$newname" >&2
-  exit 4 
+    printf "File %s already exists\n" "$newname" >&2
+    exit 4 
+
+  fi
+
+  ! ssconvert "$file" "$newname" && exit 3
+  pritnf "%s -> %s\n" "$file" "$newname"
+
+  exit
 
 fi
 
-! ssconvert "$file" "$newname" && exit 3
-pritnf "%s -> %s\n" "$file" "$newname"
+# directory
+if ! test -d "$path_arg"
+then
 
+  printf "Specified file is not directory file\n" >&2
+  exit 2
+
+fi
+
+csvfile_existed=0
+tempfile="$( mktemp )"
+
+depth=''
+(( opt_d )) && depth='-maxdepth 1'
+
+find "$path_arg" -type f "$depth"\
+  \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
+  > "$tempfile"
+
+while IFS= read -r file
+do
+
+  newname="${file%.*}"'.csv'
+  
+  if test -e "$newname"
+  then
+
+    printf "File %s already exists\n" "$newname" >&2
+    csvfile_existed=1
+    continue
+
+  fi
+
+  ! ssconvert "$file" "$newname" && exit 3
+  pritnf "%s -> %s\n" "$file" "$newname"
+
+done < "$tempfile"
+
+rm -f "$tempfile"
+
+if (( csvfile_existed ))
+then
+
+  printf "Some csv files already existed,\n" >&2
+  printf "program did not overwrite them\n" >&2
+  exit 4
+
+fi

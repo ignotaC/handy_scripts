@@ -22,47 +22,28 @@
 #
 #
 
-if ! utilchk ssconvert
+
+if ! utilchk  'sh_getopt'
 then
 
-  printf "Missing utility\n" >&2
+  printf "Missing utility.\n" >&2
   exit 1
 
 fi
 
-csvfile_existed=0
-tempfile="$( mktemp )"
+set -A ksh_args -- "$@"
 
-find . -type f\
-  \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
-  > "$tempfile"
+# Last passed argument should be options so we save it and remove
+options_str="${ksh_args[ ${#ksh_args[@]} - 1 ]}"
+unset  "ksh_args[ "${#ksh_args[@]}" - 1 ]"
 
-while IFS= read -r file
-do
-
-  newname="${file%.*}"'.csv'
-  
-  if test -e "$newname"
-  then
-
-    printf "File %s already exists\n" "$newname" >&2
-    csvfile_existed=1
-    continue
-
-  fi
-
-  ! ssconvert "$file" "$newname" && exit 3
-  pritnf "%s -> %s\n" "$file" "$newname"
-
-done < "$tempfile"
-
-rm -f "$tempfile"
-
-if (( csvfile_existed ))
+if ! sh_getopt "${ksh_args[@]}" "$options_str"
 then
 
-  printf "Some csv files already existed,\n" >&2
-  printf  "program did not overwrite them\n" >&2
-  exit 4
+  # TODO we need to distinguish error
+  printf "Failed on sh_getopt command\n" >&2
+  printf "Check if options are correct\n" >&2
+  exit 2
 
 fi
+

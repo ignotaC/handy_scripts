@@ -2,7 +2,7 @@
 
 #
 #
-# Copyright (c) 2021 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2021-23 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -22,51 +22,120 @@
 #
 #
 
-if ! utilchk 'pdfinfo' 'qpdf' 'exiftool'
+if ! utilchk 'pdfinfo' 'qpdf' 'exiftool' 'optchk'
 then
 
-  printf "There are utilities missing to run this script\n" >&2
+  printf "Missing utility\n" >&2
   exit 1
 
 fi
 
-if (( $# != 1 ))
+manual()  {
+
+  printf "This program expects at leats one argument\n" >&2
+  printf "Possible arguments:" >&2
+  printf "options followed at end by pdf file/path to convert\n" >&2
+  printf "Options:\n" >&2
+  printf "-R recurse directory for pdf files\n" >&2
+  printf "-d use only pdf files in this directory\n" >&2
+  printf "-h show this text\n" >&2
+  exit 1  # TODO add -- to invoke end of options
+
+}
+
+if (( $# < 1 )) 
 then
 
-  printf "You must provide one pdf path, only one argument\n" >&2
-  exit 1
+  manual
 
 fi
 
-if ! test -e "$1"
+set -A argslist -- "$@"
+
+# Last passed argument should be path so we save it and remove
+path_arg="${argslist[ ${#argslist[@]} - 1 ]}"
+unset  "argslist[ ${#argslist[@]} - 1 ]"
+
+optlist="dRh"
+optstr="$( optchk "${argslist[@]}" "$optlist" )" || manual
+
+opt_d=0
+opt_R=0
+[[ $optstr == *'h'* ]] && manual
+[[ $optstr == *'d'* ]] && opt_d=1
+[[ $optstr == *'R'* ]] && opt_R=1
+
+if (( opt_d && opt_R ))
 then
 
-  printf "File does not exist\n" >&2
+  printf "You can't set both d and R options\n" >&2
+
+fi
+
+# regular file
+if ! (( opt_d || opt_R ))
+then
+
+  if ! test -f "$path_arg"
+  then
+
+    printf "Specified file is not regular file\n" >&2
+    exit 2
+
+  fi
+
+  tf="$( mktemp )"
+  tf2="$( mktemp )"
+
+  printf "PDF file: %s\n" "$path_arg"
+  pdfinfo "$path_arg"
+
+  ! qpdf "$path_arg" "$tf" && exit 3
+  ! exiftool '-all:all=' "$tf" && exit 3
+  ! qpdf "$tf" "$tf2" && exit 3
+  ! mv "$tf2" "$path_arg" && exit 3
+
+  pdfinfo "$path_arg"
+
+  rm -f "$tf" "$tf2"
+
+  exit
+
+fi
+
+# directory
+if ! test -d "$path_arg"
+then
+
+  printf "Specified file is not directory file\n" >&2
   exit 2
 
 fi
-
-if ! test -f "$1"
-then
-
-  printf "File is not regular file\n" >&2
-  exit 2
-
-fi
-
 
 tf="$( mktemp )"
 tf2="$( mktemp )"
+tf3="$( mktemp )"
 
+depth=''
+(( opt_d )) && depth='-maxdepth 1'
 
-printf "PDF file: %s\n" "$1"
-pdfinfo "$1"
+find "$path_arg" -type f $depth\
+  \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
+  > "$tf"
 
-! qpdf "$1" "$tf" && exit 3
-! exiftool '-all:all=' "$tf" && exit 3
-! qpdf "$tf" "$tf2" && exit 3
-! mv "$tf2" "$1" && exit 3
+while IFS= read -r pdffile
+do
 
-pdfinfo "$1"
+  printf "\n\nPDF file: %s\n" "$pdffile"
+  pdfinfo "$pdffile"
 
-rm -f "$tf" "$tf2"
+  ! qpdf "$pdffile" "$tf2" && exit 3
+  ! exiftool '-all:all=' "$tf2" && exit 3
+  ! qpdf "$tf2" "$tf3" && exit 3
+  ! mv "$tf3" "$pdffile" && exit 3
+
+  pdfinfo "$pdffile"
+
+done < "$tf"
+
+rm -f "$tf" "$tf2" "$tf3"

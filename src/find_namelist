@@ -22,6 +22,11 @@
 #
 #
 
+# get with find file list with specified name patterns
+# patterns will be used with name command
+# you pass only file name patterns to stdin, for example
+# *.csv\n*.mp3
+
 
 if (( $# < 1  ))
 then

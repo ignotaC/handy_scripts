@@ -22,7 +22,7 @@
 #
 #
 
-if ! utilchk ssconvert optchk
+if ! utilchk 'ssconvert' 'optchk'
 then
 
   printf "Missing utility\n" >&2

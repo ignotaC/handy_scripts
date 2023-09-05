@@ -84,7 +84,7 @@ then
 
   fi
 
-  newname="${1%.*}"'.csv'
+  newname="${path_arg%.*}"'.csv'
   
   if test -e "$newname"
   then
@@ -94,8 +94,8 @@ then
 
   fi
 
-  ! ssconvert "$file" "$newname" && exit 3
-  pritnf "%s -> %s\n" "$file" "$newname"
+  ! ssconvert "$path_arg" "$newname" && exit 3
+  printf "%s -> %s\n" "$path_arg" "$newname"
 
   exit
 
@@ -116,7 +116,7 @@ tempfile="$( mktemp )"
 depth=''
 (( opt_d )) && depth='-maxdepth 1'
 
-find "$path_arg" -type f "$depth"\
+find "$path_arg" -type f $depth\
   \( -iname '*.xlw' -o -iname '*.xls' -o -iname '*.xlsx' \)\
   > "$tempfile"
 
@@ -135,7 +135,7 @@ do
   fi
 
   ! ssconvert "$file" "$newname" && exit 3
-  pritnf "%s -> %s\n" "$file" "$newname"
+  printf "%s -> %s\n" "$file" "$newname"
 
 done < "$tempfile"
 

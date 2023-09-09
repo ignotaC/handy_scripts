@@ -72,7 +72,14 @@ then
 
 fi
 
+
 # regular file
+rmvtf12() {
+
+  rm -f "$tf" "$tf2"
+
+}
+
 if ! (( opt_d || opt_R ))
 then
 
@@ -90,20 +97,27 @@ then
   printf "PDF file: %s\n" "$path_arg"
   pdfinfo "$path_arg"
 
-  ! qpdf "$path_arg" "$tf" && exit 3
-  ! exiftool '-all:all=' "$tf" && exit 3
-  ! qpdf "$tf" "$tf2" && exit 3
-  ! mv "$tf2" "$path_arg" && exit 3
+  ! qpdf "$path_arg" "$tf" && rmvtf12; exit 3
+  ! exiftool '-all:all=' "$tf" && rmvtf12; exit 3
+  ! qpdf "$tf" "$tf2" && rmvtf12; exit 3
+  ! mv "$tf2" "$path_arg" && rmvtf12 exit 3
 
   pdfinfo "$path_arg"
 
-  rm -f "$tf" "$tf2"
+  rmvtf12
 
   exit
 
 fi
 
 # directory
+
+rmvtf123() {
+
+  rm -f "$tf" "$tf2" "$tf3"
+
+}
+
 if ! test -d "$path_arg"
 then
 
@@ -129,13 +143,13 @@ do
   printf "\n\nPDF file: %s\n" "$pdffile"
   pdfinfo "$pdffile"
 
-  ! qpdf "$pdffile" "$tf2" && exit 3
-  ! exiftool '-all:all=' "$tf2" && exit 3
-  ! qpdf "$tf2" "$tf3" && exit 3
-  ! mv "$tf3" "$pdffile" && exit 3
+  ! qpdf "$pdffile" "$tf2" && rmvtf123; exit 3
+  ! exiftool '-all:all=' "$tf2" && rmvtf123; exit 3
+  ! qpdf "$tf2" "$tf3" && rmvtf123; exit 3
+  ! mv "$tf3" "$pdffile" && rmvtf123; exit 3
 
   pdfinfo "$pdffile"
 
 done < "$tf"
 
-rm -f "$tf" "$tf2" "$tf3"
+rmvtf123

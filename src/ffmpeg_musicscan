@@ -82,10 +82,12 @@ then
   if ! test -f "$path_arg"
   then
 
-    printf "Specified file is not regular file\n" >&2
+    printf "Not regular file: %s\n\n" "$path_arg" >&2
     exit 2
 
   fi
+
+  bugs_detected=0
 
   detected_format="$( ffprobe -show_format "$path_arg" 2>/dev/null \
     | grep -Fi 'format_name' | tr -s "[:upper:]" "[:lower:]" )"
@@ -94,7 +96,7 @@ then
   if [[ $detected_format == '' ]]
   then
 
-    printf "Can't detect file format: %s\n" \
+    printf "Can't detect file format: %s\n\n" \
     "$path_arg" >&2
     exit 3
 
@@ -105,11 +107,10 @@ then
   if [[ $detected_format != "$file_format" ]]
   then
 
-    printf "Problem with format on file: %s\n" "$apath_arg" >&2
     printf "File extension does not match detected file format\n" >&2
     printf "File extension: %s\nFile format: %s\n" \
       "$file_format" "$detected_format" >&2
-    exit 3
+    bugs_detected=1
 
   fi
 
@@ -136,8 +137,17 @@ then
   if (( supported == 0 ))
   then
 
-    printf "File format: is not supported by ffmpeg.\n" "" >&2
+    printf "File format is not supported by ffmpeg for %s\n\n" "$path_arg" >&2
     exit 3
+
+  fi
+
+  streams_number="$( ffprobe -show_streams "$path_arg" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
+  if (( streams_number != 1 ))
+  then
+
+    printf "This file has %d streams\n" "$streams_number" >&2
+    bugs_detected=1
 
   fi
 
@@ -146,7 +156,14 @@ then
   if test -n "$testvar"
   then
 
-    printf "Detected bugs in file: %s\n" "$path_arg" >&2
+    bugs_detected=1
+
+  fi
+
+  if (( bugs_detected ))
+  then
+
+    printf "Detected bugs in file: %s\n\n" "$path_arg" >&2
     exit 3
 
   fi
@@ -175,11 +192,13 @@ depth=''
 
 find_inamelist "$path_arg" -type f $depth < "$tf3" > "$tf2"
 
-found_bugs=0
+bugs_appeared=0
 
 while IFS= read -r file
 do
 
+  bugs_detected=0
+  
   detected_format="$( ffprobe -show_format "$file" 2>/dev/null \
     | grep -Fi 'format_name' | tr -s "[:upper:]" "[:lower:]" )"
   detected_format="${detected_format##*=}"
@@ -187,9 +206,9 @@ do
   if [[ $detected_format == '' ]]
   then
 
-    printf "Can't detect file format: %s\n" \
+    printf "Can't detect file format: %s\n\n" \
      "$file" >&2
-    found_bugs=1
+    bugs_appeared=1
     continue
 
   fi
@@ -199,12 +218,10 @@ do
   if [[ $detected_format != "$file_format" ]]
   then
 
-    printf "Problem with format on file: %s\n" "$file" >&2
     printf "File extension does not match detected file format\n" >&2
     printf "File extension: %s\nFile format: %s\n" \
       "$file_format" "$detected_format" >&2
-    found_bugs=1
-    continue
+    bugs_detected=1
 
   fi
 
@@ -228,20 +245,36 @@ do
   if (( supported == 0 ))
   then
 
-    printf "File format: is not supported by ffmpeg.\n" "" >&2
-    found_bugs=1
+    printf "File format is not supported by ffmpeg for %s\n\n" "$file" >&2
+    bugs_appeared=1
     continue
 
   fi
+
+  streams_number="$( ffprobe -show_streams "$file" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
+  if (( streams_number != 1 ))
+  then
+
+    printf "This file has %d streams\n" "$streams_number" >&2
+    bugs_detected=1
+
+  fi
+
 
   testvar=''
   testvar="$( ffprobe -loglevel 'warning' "$file" 2>&1 )"
   if test -n "$testvar"
   then
 
-    printf "Detected bugs in file: %s\n" "$file" >&2
-    found_bugs=1
-    continue
+    bugs_detected=1
+
+  fi
+
+  if (( bugs_detected ))
+  then
+
+    bugs_appeared=1
+    printf "Detected bugs in file: %s\n\n" "$file" >&2
 
   fi
 
@@ -249,14 +282,14 @@ done < "$tf2"
 
 rm -f "$tf" "$tf2" "$tf3"
 
-if (( found_bugs ))
+if (( bugs_detected ))
 then
 
   exit 3
 
 fi
 
-
+exit
 
 
 

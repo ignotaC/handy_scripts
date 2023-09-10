@@ -37,7 +37,7 @@ manual()  {
   printf "options followed at end by pdf file/path to convert\n" >&2
   printf "Options:\n" >&2
   printf "-R recurse directory for pdf files\n" >&2
-  printf "-d use only pdf files in this directory\n" >&2
+  printf "-d use pdf files in specified directory\n" >&2
   printf "-h show this text\n" >&2
   exit 1  # TODO add -- to invoke end of options
 

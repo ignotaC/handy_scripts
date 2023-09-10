@@ -39,9 +39,14 @@ manual()  {
   printf "Possible arguments:" >&2
   printf "options followed at end by path to music file\n" >&2
   printf "Options:\n" >&2
-  printf "-R recurse directory for excel files\n" >&2
-  printf "-d use only excel files in this directory\n" >&2
+  printf "-R recurse directory for music files\n" >&2
+  printf "-d use music files in specified directory\n" >&2
   printf "-h show this text\n" >&2
+  printf "Options to turn off bugs detection:\n" >&2
+  printf "-s turn off multiply stream detection\n" >&2
+  printf "-f turn off broken format detection\n" >&2
+  printf "-w turn off ffmpeg warnings detection\n" >&2
+  printf "Option to enable fixing bugs: -F\n" >&2
   exit 1  # TODO add -- to invoke end of options
 
 }
@@ -59,14 +64,22 @@ set -A argslist -- "$@"
 path_arg="${argslist[ ${#argslist[@]} - 1 ]}"
 unset  "argslist[ ${#argslist[@]} - 1 ]"
 
-optlist="dRh"
+optlist="dRhsfwF"
 optstr="$( optchk "${argslist[@]}" "$optlist" )" || manual
 
 opt_d=0
 opt_R=0
+opt_s=0
+opt_f=0
+opt_w=0
+opt_F=0
 [[ $optstr == *'h'* ]] && manual
 [[ $optstr == *'d'* ]] && opt_d=1
 [[ $optstr == *'R'* ]] && opt_R=1
+[[ $optstr == *'s'* ]] && opt_s=1
+[[ $optstr == *'d'* ]] && opt_f=1
+[[ $optstr == *'w'* ]] && opt_w=1
+[[ $optstr == *'F'* ]] && opt_F=1
 
 if (( opt_d && opt_R ))
 then
@@ -104,13 +117,18 @@ then
 
   file_format="$( echo "${path_arg##*.}" | tr -s "[:upper:]" "[:lower:]" )"
 
-  if [[ $detected_format != "$file_format" ]]
+  if (( ! opt_f )) 
   then
 
-    printf "File extension does not match detected file format\n" >&2
-    printf "File extension: %s\nFile format: %s\n" \
-      "$file_format" "$detected_format" >&2
-    bugs_detected=1
+    if [[ $detected_format != "$file_format" ]]
+    then
+
+      printf "File extension does not match detected file format\n" >&2
+      printf "File extension: %s\nFile format: %s\n" \
+        "$file_format" "$detected_format" >&2
+      bugs_detected=1
+
+    fi
 
   fi
 
@@ -142,21 +160,31 @@ then
 
   fi
 
-  streams_number="$( ffprobe -show_streams "$path_arg" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
-  if (( streams_number != 1 ))
+  if (( ! opt_s )) 
   then
+  
+    streams_number="$( ffprobe -show_streams "$path_arg" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
+    if (( streams_number != 1 ))
+    then
 
-    printf "This file has %d streams\n" "$streams_number" >&2
-    bugs_detected=1
+      printf "This file has %d streams\n" "$streams_number" >&2
+      bugs_detected=1
+
+    fi
 
   fi
 
-  testvar=''
-  testvar="$( ffprobe -loglevel 'warning' "$path_arg" 2>&1 )"
-  if test -n "$testvar"
+  if (( ! opt_w ))
   then
+ 
+    testvar=''
+    testvar="$( ffprobe -loglevel 'warning' "$path_arg" 2>&1 )"
+    if test -n "$testvar"
+    then
 
-    bugs_detected=1
+      bugs_detected=1
+
+    fi
 
   fi
 

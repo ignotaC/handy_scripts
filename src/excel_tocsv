@@ -37,7 +37,7 @@ manual()  {
   printf "options followed at end by Excel file/path to convert\n" >&2
   printf "Options:\n" >&2
   printf "-R recurse directory for excel files\n" >&2
-  printf "-d use only excel files in this directory\n" >&2
+  printf "-d use excel files in specified directory\n" >&2
   printf "-h show this text\n" >&2
   exit 1  # TODO add -- to invoke end of options
 

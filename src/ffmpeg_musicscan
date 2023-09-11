@@ -163,7 +163,9 @@ then
   if (( ! opt_s )) 
   then
   
-    streams_number="$( ffprobe -show_streams "$path_arg" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
+    streams_number="$( ffprobe -show_streams "$path_arg" 2>/dev/null |\
+      grep index | wc -l | tr -d '[:space:]' )"
+
     if (( streams_number != 1 ))
     then
 
@@ -243,13 +245,18 @@ do
 
   file_format="$( echo "${file##*.}" | tr -s "[:upper:]" "[:lower:]" )"
 
-  if [[ $detected_format != "$file_format" ]]
+  if (( ! opt_f ))
   then
 
-    printf "File extension does not match detected file format\n" >&2
-    printf "File extension: %s\nFile format: %s\n" \
-      "$file_format" "$detected_format" >&2
-    bugs_detected=1
+    if [[ $detected_format != "$file_format" ]]
+    then
+
+      printf "File extension does not match detected file format\n" >&2
+      printf "File extension: %s\nFile format: %s\n" \
+        "$file_format" "$detected_format" >&2
+      bugs_detected=1
+
+    fi
 
   fi
 
@@ -279,22 +286,33 @@ do
 
   fi
 
-  streams_number="$( ffprobe -show_streams "$file" 2>/dev/null | grep index | wc -l | tr -d '[:space:]' )"
-  if (( streams_number != 1 ))
+  if (( ! opt_s ))
   then
 
-    printf "This file has %d streams\n" "$streams_number" >&2
-    bugs_detected=1
+    streams_number="$( ffprobe -show_streams "$file" 2>/dev/null |\
+      grep index | wc -l | tr -d '[:space:]' )"
+
+    if (( streams_number != 1 ))
+    then
+
+      printf "This file has %d streams\n" "$streams_number" >&2
+      bugs_detected=1
+
+    fi
 
   fi
 
-
-  testvar=''
-  testvar="$( ffprobe -loglevel 'warning' "$file" 2>&1 )"
-  if test -n "$testvar"
+  if (( ! opt_w ))
   then
 
-    bugs_detected=1
+    testvar=''
+    testvar="$( ffprobe -loglevel 'warning' "$file" 2>&1 )"
+    if test -n "$testvar"
+    then
+
+      bugs_detected=1
+
+    fi
 
   fi
 

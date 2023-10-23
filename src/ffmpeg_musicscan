@@ -32,7 +32,17 @@ then
 
 fi
 
+fix_music_format() {
 
+  detected_format="$1"
+  file_format="$2"
+
+  # if 
+
+}
+
+ #   if [[ $detected_format != "$file_format" ]]
+ 
 manual()  {
 
   printf "This program expects at leats one argument\n" >&2
@@ -114,6 +124,7 @@ then
     exit 3
 
   fi
+
 
   file_format="$( echo "${path_arg##*.}" | tr -s "[:upper:]" "[:lower:]" )"
 

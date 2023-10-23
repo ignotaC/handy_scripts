@@ -32,7 +32,8 @@ fi
 
 manual()  {
 
-  printf "This program expects at leats one argument\n" >&2
+  printf "This program tries to generate csv file from excel file\n" >&2
+  printf "It expects at leats one argument\n" >&2
   printf "Possible arguments:" >&2
   printf "options followed at end by Excel file/path to convert\n" >&2
   printf "Options:\n" >&2

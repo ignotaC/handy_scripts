@@ -25,15 +25,16 @@
 
 
 pkg_add firefox
+pkg_add surf
 pkg_add tor
-pkg_add tor-browser
-pkg_add cups
-pkg_add rsync
+pkg_add tor-browsera
 
 pkg_add fvwm2
 pkg_add feh
 pkg_add compton
 pkg_add xdotool
+
+pkg_add cups
 
 pkg_add mupdf
 pkg_add p5-Image-ExifTool
@@ -62,6 +63,7 @@ pkg_add clutter
 pkg_add conky
 
 pkg_add vim
+pkg_add rsync
 
 pkg_add irssi
 

@@ -1,0 +1,97 @@
+<h1>Handy Scripts pack</h1>
+<p>Made for God Glory.<br />
+Hail Supreame God one in Great Trinity.<br />
+Prise Saint Maria, mother of God.  </p>
+<p>irc: ##ignota irc.libera.chat</p>
+<p>A pack of miscellaneous scripts<br />
+I wrote for my personal use  </p>
+<p>None in dependecies means you have the basic set.<br />
+Basci set you need:<br />
+<strong>cmake</strong>, <strong>make</strong>, <strong>cc</strong>, <strong>posix</strong>, <strong>ksh</strong>.  </p>
+<h2>INTSALLATION:</h2>
+<h3>1) downloading</h3>
+<p>Before we install, we need to suck this up:  </p>
+<blockquote>
+<p><code>git clone 'https://github.com/ignotaC/handyscripts'</code>  </p>
+</blockquote>
+<h3>2) compilation</h3>
+<p>Run:  </p>
+<blockquote>
+<p><code>sh install.sh</code>  </p>
+</blockquote>
+<p>This gets you ignota and smallsoft,<br />
+Compiles stuff, moves all scripts to bin dir  </p>
+<h3>3) installation ( binary managment )</h3>
+<p>You do it by your self, You might not want to<br />
+use some of the software this pack provides.<br />
+Simply copy what ever you want to one of the<br />
+preffered PATH directory which you can see<br />
+after running env command. Since I add<br />
+~/bin to my PATH with .xsession.<br />
+I simply take all by doing:  </p>
+<blockquote>
+<p><code>cp bin/* ~/bin</code>  </p>
+</blockquote>
+<h3>4) clean up</h3>
+<p>This simply removes stuff installation created<br />
+inside the directory of your makefile.  </p>
+<blockquote>
+<p>'sh clear.sh'</p>
+</blockquote>
+<h2>Program list:</h2>
+<ol>
+<li>
+<p><strong>utilchk</strong> <code>[ command ]</code></p>
+<blockquote></blockquote>
+<p>Script checks if you can run specified command<br />
+Program expects at least one argument.<br />
+Dependencies: none<br />
+Example of using it:  </p>
+<blockquote>
+<p><code>utilchk optchk</code> </p>
+</blockquote>
+</li>
+<li>
+<p><strong>optchk</strong> <code>[ option arguments ] ... [ option string ]</code></p>
+<blockquote></blockquote>
+<p>Script checks if option arguments are <br />
+part of option string that user passes<br />
+To define which options are valid.<br />
+Each option argument must start with '-'<br />
+Program expects at least one argument.<br />
+Dependencies: <strong>utilchk</strong>, <strong>sh_getopt</strong><br />
+Example of using it:  </p>
+<blockquote>
+<p><code>optchk -o -bs ojkbsa</code> </p>
+</blockquote>
+<p>This will check if 'o' and 'bs' are part of 'ojkbsa'<br />
+If not error will be returned.  </p>
+</li>
+<li>
+<p><strong>excel_tocsv</strong> <code>[ options ] ... [ path ]</code></p>
+<blockquote></blockquote>
+<p>Script tries to generate from excel files<br />
+csv. files. It does not remove excel files,<br />
+that sucessfully generated to csv.<br />
+If you pass only path it will allways try to<br />
+generate csv file from it as if it was excel file.<br />
+If you pass -R or -d option that causes to work on firectories.<br />
+Script will only look for files ending with .xlw .xls .xlsx<br />
+The look up is not case sensetive<br />
+options:  </p>
+<p><code>-d</code><br />
+Perform generation on all excel files in directory  </p>
+<p><code>-R</code><br />
+Perform generation on all excel files<br />
+recursing all directories in directory  </p>
+<p><code>-h</code><br />
+Print basic help  </p>
+<p>Program expects at least one argument.<br />
+Dependencies: <strong>ssconvert</strong>, <strong>optchk</strong><br />
+Example of using it:  </p>
+<blockquote>
+<p><code>excel_tocsv file.xls</code> 
+<code>excel_tocsv -R .</code> </p>
+</blockquote>
+</li>
+</ol>

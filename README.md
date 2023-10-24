@@ -10,7 +10,7 @@ I wrote for my personal use
 
 None in dependecies means you have the basic set.  
 Basci set you need:  
-**cmake**, **make**, **cc - c compiler**, **posix**, **ksh**.  
+**cmake**, **make**, **cc**, **posix**, **ksh**.  
 
 ## INTSALLATION:
 
@@ -46,12 +46,27 @@ inside the directory of your makefile.
   >  
 
     Script checks if you can run specified command  
-    Program expects at least one arguments.  
+    Program expects at least one argument.  
     Dependencies: none  
     Example of using it:  
   >`utilchk optchk` 
 
-2.  **excel_tocsv** `[ option ] [ path ]`
+2.  **optchk** `[ option arguments ] ... [ option string ]`
+  >  
+
+    Script checks if option arguments are   
+    part of option string that user passes  
+    To define which options are valid.  
+    Each option argument must start with '-'  
+    Program expects at least one argument.  
+    Dependencies: **utilchk**, **sh_getopt**  
+    Example of using it:  
+  >`optchk -o -bs ojkbsa` 
+
+    This will check if 'o' and 'bs' are part of 'ojkbsa'  
+    If not error will be returned.  
+
+2.  **excel_tocsv** `[ options ] ... [ path ]`
   >  
 
     Script tries to generate from excel files  
@@ -74,7 +89,7 @@ inside the directory of your makefile.
     `-h`  
     Print basic help  
 
-    Program expects at least one arguments.  
+    Program expects at least one argument.  
     Dependencies: **ssconvert**, **optchk**  
     Example of using it:  
   >`excel_tocsv file.xls` 

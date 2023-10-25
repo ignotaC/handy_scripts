@@ -68,6 +68,64 @@ Example of using it:  </p>
 If not error will be returned.  </p>
 </li>
 <li>
+<p><strong>find_list</strong> <code>[ path ] [ find options ] ...</code></p>
+<blockquote></blockquote>
+<p>Script will run find on specified path.<br />
+The arguments after path are passed to find.<br />
+On stdin there must appear even ammount of arguments,<br />
+where first argument is -name or -iname<br />
+and second argument is file pattern we look for.<br />
+For example: <code>*.mp3</code><br />
+Program expects at least one argument - path.<br />
+Dependencies: none
+Example of using it:  </p>
+<blockquote>
+<p><code>find_list . -type f &lt; printf '-name\n*.mp3\n-iname\n*.flac'</code>  </p>
+</blockquote>
+<p>This will print out found files as if we would run:  </p>
+<blockquote>
+<p><code>find . -name *.mp3 -type f; find . -iname *.flac -type f</code>  </p>
+</blockquote>
+</li>
+<li>
+<p><strong>find_namelist</strong> <code>[ path ] [ find options ] ...</code></p>
+<blockquote></blockquote>
+<p>Script will run find on specified path.<br />
+The arguments after path are passed to find.<br />
+Program takes arguments for -name option from stdin,<br />
+Which are file patterns we look for.<br />
+For example: <code>*.mp3</code><br />
+Program expects at least one argument - path.<br />
+Dependencies: none
+Example of using it:  </p>
+<blockquote>
+<p><code>find_namelist . -type f &lt; printf '*.mp3\n*.flac'</code>  </p>
+</blockquote>
+<p>This will print out found files as if we would run:  </p>
+<blockquote>
+<p><code>find . -name *.mp3 -type f; find . -name *.flac -type f</code>  </p>
+</blockquote>
+</li>
+<li>
+<p><strong>find_inamelist</strong> <code>[ path ] [ find options ] ...</code></p>
+<blockquote></blockquote>
+<p>Script will run find on specified path.<br />
+The arguments after path are passed to find.<br />
+Program takes arguments for -iname option from stdin,<br />
+Which are file patterns we look for.<br />
+For example: <code>*.mp3</code><br />
+Program expects at least one argument - path.<br />
+Dependencies: none
+Example of using it:  </p>
+<blockquote>
+<p><code>find_inamelist . -type f &lt; printf '*.mp3\n*.flac'</code>  </p>
+</blockquote>
+<p>This will print out found files as if we would run:  </p>
+<blockquote>
+<p><code>find . -iname *.mp3 -type f; find . -iname *.flac -type f</code>  </p>
+</blockquote>
+</li>
+<li>
 <p><strong>excel_tocsv</strong> <code>[ options ] ... [ path ]</code></p>
 <blockquote></blockquote>
 <p>Script tries to generate from excel files<br />

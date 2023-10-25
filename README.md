@@ -66,7 +66,57 @@ inside the directory of your makefile.
     This will check if 'o' and 'bs' are part of 'ojkbsa'  
     If not error will be returned.  
 
-2.  **excel_tocsv** `[ options ] ... [ path ]`
+3.  **find_list** `[ path ] [ find options ] ...`
+  >  
+
+    Script will run find on specified path.  
+    The arguments after path are passed to find.  
+    On stdin there must appear even ammount of arguments,  
+    where first argument is -name or -iname  
+    and second argument is file pattern we look for.  
+    For example: `*.mp3`  
+    Program expects at least one argument - path.  
+    Dependencies: none
+    Example of using it:  
+  >`find_list . -type f < printf '-name\n*.mp3\n-iname\n*.flac'`  
+
+    This will print out found files as if we would run:  
+  >`find . -name *.mp3 -type f; find . -iname *.flac -type f`  
+
+4.  **find_namelist** `[ path ] [ find options ] ...`
+  >  
+
+    Script will run find on specified path.  
+    The arguments after path are passed to find.  
+    Program takes arguments for -name option from stdin,  
+    Which are file patterns we look for.  
+    For example: `*.mp3`  
+    Program expects at least one argument - path.  
+    Dependencies: none
+    Example of using it:  
+  >`find_namelist . -type f < printf '*.mp3\n*.flac'`  
+
+    This will print out found files as if we would run:  
+  >`find . -name *.mp3 -type f; find . -name *.flac -type f`  
+
+5.  **find_inamelist** `[ path ] [ find options ] ...`
+  >  
+
+    Script will run find on specified path.  
+    The arguments after path are passed to find.  
+    Program takes arguments for -iname option from stdin,  
+    Which are file patterns we look for.  
+    For example: `*.mp3`  
+    Program expects at least one argument - path.  
+    Dependencies: none
+    Example of using it:  
+  >`find_inamelist . -type f < printf '*.mp3\n*.flac'`  
+
+    This will print out found files as if we would run:  
+  >`find . -iname *.mp3 -type f; find . -iname *.flac -type f`  
+
+
+6.  **excel_tocsv** `[ options ] ... [ path ]`
   >  
 
     Script tries to generate from excel files  

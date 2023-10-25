@@ -45,7 +45,13 @@ cat > "$tf"
 while IFS= read -r name_cmd
 do
  
-  read -r name_str
+  if ! read -r name_str
+  then
+
+    printf "Stdin input missing one line, file pattern.\n"
+    exit 2
+
+  fi
   find "$arg1" "$name_cmd" "$name_str" "$@"
 
 done < "$tf"

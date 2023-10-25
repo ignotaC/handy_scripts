@@ -40,7 +40,7 @@ do
   exist=0
 
   oldc="$( echo "$cookie" | lext -c '' '='  )"
-  while read -r line
+  while IFS= read -r line
   do
 
     newc="$( echo "$line" | lext -c '' '=' )"
@@ -61,7 +61,7 @@ do
 
 done < "$tempfile2"
 
-while read -r line
+while IFS= read -r line
 do
 
   printf "%s\n" "$line" >> "$tempfile3"
@@ -71,7 +71,7 @@ done < "$tempfile"
 
 printf "Cookie:"
 first=1;
-while read -r line
+while IFS= read -r line
 do
   
   if (( first == 1 ))

@@ -37,7 +37,7 @@ done < "$tmpfile"
 
 find . -type f -iname '*.png' > "$tmpfile"
 
-while read -r imgfile
+while IFS= read -r imgfile
 do
 
 	du -h "$imgfile"
@@ -57,7 +57,7 @@ done < "$tmpfile"
 
 find . -type f -iname '*.jpeg' > "$tmpfile"
 
-while read -r imgfile
+while IFS= read -r imgfile
 do
 
 	du -h "$imgfile"
@@ -78,7 +78,7 @@ done < "$tmpfile"
 
 find . -type f -iname '*.webp' > "$tmpfile"
 
-while read -r imgfile
+while IFS= read -r imgfile
 do
 
 	du -h "$imgfile"

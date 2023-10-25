@@ -78,7 +78,7 @@ inside the directory of your makefile.
     Program expects at least one argument - path.  
     Dependencies: none
     Example of using it:  
-  >`find_list . -type f < printf '-name\n*.mp3\n-iname\n*.flac'`  
+  >`printf '-name\n*.mp3\n-iname\n*.flac' | find_list . -type f`  
 
     This will print out found files as if we would run:  
   >`find . -name *.mp3 -type f; find . -iname *.flac -type f`  
@@ -94,7 +94,7 @@ inside the directory of your makefile.
     Program expects at least one argument - path.  
     Dependencies: none
     Example of using it:  
-  >`find_namelist . -type f < printf '*.mp3\n*.flac'`  
+  >`printf '*.mp3\n*.flac' | find_namelist . -type f`  
 
     This will print out found files as if we would run:  
   >`find . -name *.mp3 -type f; find . -name *.flac -type f`  
@@ -110,7 +110,7 @@ inside the directory of your makefile.
     Program expects at least one argument - path.  
     Dependencies: none
     Example of using it:  
-  >`find_inamelist . -type f < printf '*.mp3\n*.flac'`  
+  >`printf '*.mp3\n*.flac' | find_inamelist . -type f`  
 
     This will print out found files as if we would run:  
   >`find . -iname *.mp3 -type f; find . -iname *.flac -type f`  
@@ -144,4 +144,14 @@ inside the directory of your makefile.
     Example of using it:  
   >`excel_tocsv file.xls` 
   >`excel_tocsv -R .` 
+
+7.  **ffmpeg_fullsupformat**
+  >  
+
+    Script will output supported format by ffmpeg.  
+    Format that can only be encoded or decoded will not be shown.  
+    Program does not take arguments.  
+    Dependencies: **ffmpeg**  
+    Example of using it:  
+  >`ffmpeg_fullsupformat`  
 

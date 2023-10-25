@@ -32,6 +32,8 @@ fi
 
 tf="$( mktemp )"
 tf2="$( mktemp )"
+tf3="$( mktemp )"
+tf4="$( mktemp )"
 
 ffmpeg -nostdin -formats 2>/dev/null > "$tf"
 
@@ -40,39 +42,43 @@ while IFS= read -r line
 do
 
   ans="$( printf "$line" | awk '{ print $1 }' )"
-  if [[ "$ans" != 'DE' ]]
+  if [[ "$ans" == 'DE' ]]
   then
 
-    continue
+    printf "*." >> "$tf2"
+    printf "%s\n" "$line" | awk '{ print $2 }' >> "$tf2"
+
+  elif [[ "$ans" == 'E' ]]
+  then
+
+    printf "%s" "$line" | awk '{ print $2 }' >> "$tf3"
+
+  elif [[ "$ans" == 'D' ]]
+  then
+
+    printf "%s" "$line" | awk '{ print $2 }' >> "$tf4"
 
   fi
 
-  
-  printf "*." >> "$tf2"
-  printf "%s\n" "$line" | awk '{ print $2 }' >> "$tf2"
-
-
 done < "$tf"
 
-# now find those how are separated D and E
-#while IFS= read -r line
-#do
+# Some have separated decoders and encoders
+# We detected them here:
 
-#  ans="$( printf "$line" | awk '{ print $1 }' )"
-#  if [[ "$ans" != 'D' ]]
-#  then
+cat "$tf3" | fstrswp ',' '\n' | sort | uniq > "$tf"
+cat "$tf4" | fstrswp ',' '\n' | sort | uniq >> "$tf"
 
-#    continue
+sort "$tf" | uniq -d > "$tf3"
 
-#  fi
+while IFS= read -r line
+do
 
-#  printf '*.'
-#echo "$line" | awk '{ print $2 }'
+    printf "*." >> "$tf2"
+    printf "%s\n" "$line" >> "$tf2"
 
-
-#done < "$tf"
+done < "$tf3"
 
 cat "$tf2"
 
-rm -f "$tf" "$tf2"
+rm -f "$tf" "$tf2" "$tf3" "$tf4"
 

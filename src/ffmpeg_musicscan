@@ -24,22 +24,14 @@
 
 
 
-if ! utilchk 'ffprobe' 'ffmpeg' 'ffmpeg_fullsupformat' 'optchk'
+if ! utilchk 'ffprobe' 'ffmpeg' 'ffmpeg_fullsupformat' 'optchk'\
+  'find_inamelist'
 then
 
   printf "Missing utilities.\n" >&2
   exit 1
 
 fi
-
-fix_music_format() {
-
-  detected_format="$1"
-  file_format="$2"
-
-  # if 
-
-}
 
  #   if [[ $detected_format != "$file_format" ]]
  
@@ -87,7 +79,7 @@ opt_F=0
 [[ $optstr == *'d'* ]] && opt_d=1
 [[ $optstr == *'R'* ]] && opt_R=1
 [[ $optstr == *'s'* ]] && opt_s=1
-[[ $optstr == *'d'* ]] && opt_f=1
+[[ $optstr == *'f'* ]] && opt_f=1
 [[ $optstr == *'w'* ]] && opt_w=1
 [[ $optstr == *'F'* ]] && opt_F=1
 
@@ -137,7 +129,34 @@ then
       printf "File extension does not match detected file format\n" >&2
       printf "File extension: %s\nFile format: %s\n" \
         "$file_format" "$detected_format" >&2
-      bugs_detected=1
+
+      if ((  opt_F  ))
+      then
+
+        new_path_arg="${path_arg%.*}"'.'"$detected_format"
+        if test -e "$new_path_arg"
+        then
+
+          printf "Can't correct format, because it would\n" >&2
+          printf "overwrite file: %s\n" "$new_path_arg" >&2
+          printf "File left with wrong format in suffix\n" >&2
+          bugs_detected=1
+
+        else
+
+          mv "$path_arg" "$new_path_arg"
+          path_arg="$new_path_arg"
+          file_format="$detected_format"
+          printf "File suffix was corrected\n" >&2
+          printf "Current file name: %s\n" "$path_arg" >&2
+
+        fi
+
+      else
+
+        bugs_detected=1
+
+      fi
 
     fi
 
@@ -195,6 +214,9 @@ then
     if test -n "$testvar"
     then
 
+      printf "Ffmpeg detected stream bug\n" >&2
+      testvar="$( printf "%s" "$testvar" | awk NF )"
+      printf "%s\n" "$testvar" >&2
       bugs_detected=1
 
     fi
@@ -265,7 +287,34 @@ do
       printf "File extension does not match detected file format\n" >&2
       printf "File extension: %s\nFile format: %s\n" \
         "$file_format" "$detected_format" >&2
-      bugs_detected=1
+
+      if ((  opt_F  ))
+      then
+
+        new_path_arg="${file%.*}"'.'"$detected_format"
+        if test -e "$new_path_arg"
+        then
+
+          printf "Can't correct format, because it would\n" >&2
+          printf "overwrite file: %s\n" "$new_path_arg" >&2
+          printf "File left with wrong format in suffix\n" >&2
+          bugs_detected=1
+
+        else
+
+          mv "$file" "$new_path_arg"
+          file="$new_path_arg"
+          file_format="$detected_format"
+          printf "File suffix was corrected\n" >&2
+          printf "Current file name: %s\n" "$path_arg" >&2
+
+        fi
+
+      else
+
+        bugs_detected=1
+
+      fi
 
     fi
 
@@ -321,6 +370,9 @@ do
     if test -n "$testvar"
     then
 
+      printf "Ffmpeg detected stream bug\n" >&2
+      testvar="$( printf "%s" "$testvar" | awk NF )"
+      printf "%s\n" "$testvar" >&2
       bugs_detected=1
 
     fi

@@ -80,7 +80,7 @@ Program expects at least one argument - path.<br />
 Dependencies: none
 Example of using it:  </p>
 <blockquote>
-<p><code>find_list . -type f &lt; printf '-name\n*.mp3\n-iname\n*.flac'</code>  </p>
+<p><code>printf '-name\n*.mp3\n-iname\n*.flac' | find_list . -type f</code>  </p>
 </blockquote>
 <p>This will print out found files as if we would run:  </p>
 <blockquote>
@@ -99,7 +99,7 @@ Program expects at least one argument - path.<br />
 Dependencies: none
 Example of using it:  </p>
 <blockquote>
-<p><code>find_namelist . -type f &lt; printf '*.mp3\n*.flac'</code>  </p>
+<p><code>printf '*.mp3\n*.flac' | find_namelist . -type f</code>  </p>
 </blockquote>
 <p>This will print out found files as if we would run:  </p>
 <blockquote>
@@ -118,7 +118,7 @@ Program expects at least one argument - path.<br />
 Dependencies: none
 Example of using it:  </p>
 <blockquote>
-<p><code>find_inamelist . -type f &lt; printf '*.mp3\n*.flac'</code>  </p>
+<p><code>printf '*.mp3\n*.flac' | find_inamelist . -type f</code>  </p>
 </blockquote>
 <p>This will print out found files as if we would run:  </p>
 <blockquote>
@@ -150,6 +150,18 @@ Example of using it:  </p>
 <blockquote>
 <p><code>excel_tocsv file.xls</code> 
 <code>excel_tocsv -R .</code> </p>
+</blockquote>
+</li>
+<li>
+<p><strong>ffmpeg_fullsupformat</strong></p>
+<blockquote></blockquote>
+<p>Script will output supported format by ffmpeg.<br />
+Format that can only be encoded or decoded will not be shown.<br />
+Program does not take arguments.<br />
+Dependencies: <strong>ffmpeg</strong><br />
+Example of using it:  </p>
+<blockquote>
+<p><code>ffmpeg_fullsupformat</code>  </p>
 </blockquote>
 </li>
 </ol>

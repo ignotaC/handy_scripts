@@ -33,8 +33,6 @@ then
 
 fi
 
- #   if [[ $detected_format != "$file_format" ]]
- 
 manual()  {
 
   printf "This program expects at leats one argument\n" >&2
@@ -217,7 +215,35 @@ then
       printf "Ffmpeg detected stream bug\n" >&2
       testvar="$( printf "%s" "$testvar" | awk NF )"
       printf "%s\n" "$testvar" >&2
-      bugs_detected=1
+
+      if (( opt_F ))
+      then
+
+        printf "Attempting to fix this.\n" >&2
+        ffmpeg -nostdin -y -loglevel 'warning' -i "$path_arg" \
+          -f "$file_format" -acodec copy "$tf" 2>/dev/null 1>/dev/null
+        cp "$tf" "$path_arg"
+
+        #retest
+        testvar=''
+        testvar="$( ffprobe -loglevel 'warning' "$path_arg" 2>&1 )"
+        if test -n "$testvar"
+        then
+
+          printf "Failed to fix stream bug.\n" >&2
+          bugs_detected=1
+
+        else
+
+          printf "It appears stream bug was fixed.\n" >&2
+
+        fi
+
+      else
+
+        bugs_detected=1
+
+      fi
 
     fi
 
@@ -373,7 +399,35 @@ do
       printf "Ffmpeg detected stream bug\n" >&2
       testvar="$( printf "%s" "$testvar" | awk NF )"
       printf "%s\n" "$testvar" >&2
-      bugs_detected=1
+
+      if (( opt_F ))
+      then
+
+        printf "Attempting to fix this.\n" >&2
+        ffmpeg -nostdin -y -loglevel 'warning' -i "$file" \
+          -f "$file_format" -acodec copy "$tf" 2>/dev/null 1>/dev/null
+        cp "$tf" "$file"
+
+        #retest
+        testvar=''
+        testvar="$( ffprobe -loglevel 'warning' "$file" 2>&1 )"
+        if test -n "$testvar"
+        then
+
+          printf "Failed to fix stream bug.\n" >&2
+          bugs_detected=1
+
+        else
+
+          printf "It appears stream bug was fixed.\n" >&2
+
+        fi
+
+      else
+
+        bugs_detected=1
+
+      fi
 
     fi
 
@@ -399,9 +453,6 @@ then
 fi
 
 exit
-
-
-
 
 
 

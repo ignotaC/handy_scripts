@@ -47,6 +47,8 @@ then
   printf "\t\t%s\n" "Cookie: some=stuff"
   printf "%s\n" "-U user-agent"
   printf "\t%s\n" "Define what ever user agent you want to use"
+  printf "%s\n" "-H line"
+  printf "\t%s\n" "Add this line on end of http header"
   exit
 fi
 
@@ -56,8 +58,9 @@ IP=''
 port=''
 TORport='9050' #that is default, ofc you need tor daemon enabled
 httpsON=1
+HTTP_req_end=''
 
-while getopts di:p:t:C:U: optchr
+while getopts di:p:t:C:U:H: optchr
 do
 
   case "$optchr" in
@@ -67,6 +70,7 @@ do
     t) TORport="$OPTARG" ;;
     C) cookie="$OPTARG" ;;
     U) ua="$OPTARG" ;;
+    H) HTTP_req_end="$( printf "%s\n%s" "$HTTP_req_end" "$OPTARG" )" ;;
     ?) exit ;;
   esac
 
@@ -141,6 +145,7 @@ printf "%s\n" "$cookie"
 printf  "%s\n" 'Accept: text/html,application/xhtml+xml'\
 ',application/xml;q=0.9,image/webp,*/*;q=0.8'
 printf "%s\n" 'Accept-Language: en-US,en;q=0.5'
+printf "%s\n" "$HTTP_req_end"
 
 }
 

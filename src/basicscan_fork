@@ -74,5 +74,6 @@ do
 
 done
 
+rm -f "$tf" "$tf2"
 
 

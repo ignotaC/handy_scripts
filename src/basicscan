@@ -2,7 +2,7 @@
 
 #
 #
-# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2022-2023 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -22,85 +22,80 @@
 #
 #
 
-
-
 noarg() {
 
-  printf "To use this program you need to pass three arguments.\n" >&2
+  printf "To use this program you need to pass four arguments.\n" >&2
   printf "Script that will generate data\n" >&2
   printf "Script that will be forked and use passed data\n" >&2
   printf "Number of forks.\n" >&2
+  printf "Data option \n" >&2
+  printf "-s option will redirect data to stdin of fork command\n" >&2
+  printf "-o option will redirect data as last argument of fork command\n" >&2
   exit
 
 }
 
 if test -z "$1"
 then
-	noarg
+  noarg
 fi
 loadscript="$1"
 
 if test -z "$2"
 then
-	noarg
+  noarg
 fi
 forkscript="$2"
 
 if test -z "$3"
 then
-	noarg
+  noarg
 fi
 forknum="$3"
 
+if test -z "$4"
+then
+  noarg
+fi
+opt="$4"
+
+if ! [[ $opt == '-o' || $opt == '-s' ]]
+then
+  noarg
+fi
+
 # !!! TODO check if forknum is number
+# TODO make it number use as port and name as sun
 
 #unix socket names we will use
 sun_load="$( mktemp )"
 sun_ans="$( mktemp )"
 
-# TODO make it number use as port and name as sun
+# ASK can we protect this why with unix file from race condition ?
+# since temp file should never be removed to be safe
+rm -r "$sun_load" "$sun_ans"
 
-basicscan_load()  {
-
-  if test -z "$1"
-  then
-  	  printf "Need load script name\n" >&2
-  	  #TODO need to stop on error
-  fi
-
-
-  if test -z "$2"
-  then
-  	  printf "Need load data socket name\n" >&2
-  	  #TODO need to stop on error
-  fi
-
-
-  # TODO error check tits
-
-  "$1" | sndlog_data -su "$2"
-
-}
-
-basicscan_load "$loadscript" "$sun_load" &
+# on error send signal. on end send signal too
+eval "$loadscript" | sndlog_data -su "$sun_load" &
+#basicscan_load "$loadscript" "$sun_load" &
 
 # errocheck this somehow
 sndlog_data -lu "$sun_ans" &
 loadpid="$!"
 
-#main loop
+# Start forked programs
 started_forks=1
-
 while (( "$started_forks" <= "$forknum" ))
 do
 
 	started_forks="$(( started_forks + 1 ))"
-	"$forkscript" "$sun_load" "$sun_ans" "$started_forks" &
+	basicscan_fork "$sun_load" "$sun_ans" "$forkscript" "$opt" &
 	sleep 1 # slow start
 	#TODO check if there are no errors on starting forks
 
 done
 
+# we break on #1 because this is out last log job
 while true
 do
 

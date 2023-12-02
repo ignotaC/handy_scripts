@@ -22,10 +22,13 @@
 #
 #
 
-sun_load="$1" 
-sun_ans="$2" 
-forkscript="$3"
-opt="$4"
+opt="$1"
+forkscript="$2"
+sun_load="$3" 
+sun_ans="$4" 
+
+forknum="$5" 
+specscript="$6" 
 
 tf="$( mktemp )"
 tf2="$( mktemp )"
@@ -35,7 +38,17 @@ tf2="$( mktemp )"
 
 # Option sets how we use our data
 PASS_DATA_AS_ARG=0
-[[ $opt == '-o' ]] && PASS_DATA_AS_ARG=1
+[[ $opt == 'a'* ]] && PASS_DATA_AS_ARG=1
+SPECIAL=0
+
+# Special script managment
+if [[ $opt == *'A' ]]
+then
+
+  specialdata="$( eval "$specscript"' '"$forknum" | evalline )"
+
+fi  #TODO check error ^
+
 
 data=''
 
@@ -46,6 +59,7 @@ do
  if (( $PASS_DATA_AS_ARG ))
   then
     data="$( nc -U "$sun_load" )" || break
+    data="$( printf "%s" "$data" | evalline )" || break
   else
     nc -U "$sun_load" > "$tf" || break
   fi
@@ -57,9 +71,9 @@ do
 
     if (( $PASS_DATA_AS_ARG ))
     then
-      eval "$forkscript"' '"$data"  > "$tf2" && break
+      eval "$forkscript"' '"$specialdata"' '"$data"  > "$tf2" && break
     else
-      eval "$forkscript" < "$tf" > "$tf2" && break
+      eval "$forkscript"' '"$specialdata" < "$tf" > "$tf2" && break
     fi
 
   done

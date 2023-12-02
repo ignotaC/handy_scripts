@@ -22,47 +22,97 @@
 #
 #
 
-noarg() {
 
-  printf "To use this program you need to pass four arguments.\n" >&2
-  printf "Script that will generate data\n" >&2
-  printf "Script that will be forked and use passed data\n" >&2
-  printf "Number of forks.\n" >&2
+if ! utilchk 'basicscan_fork' 'sndlog_data' 'optchk'
+then
+
+  printf "Missing utility\n" >&2
+  exit 1
+
+fi
+
+
+badarg() {
+
+  printf "To use this program you need to pass four arguments.\n\n" >&2
   printf "Data option \n" >&2
   printf "-s option will redirect data to stdin of fork command\n" >&2
-  printf "-o option will redirect data as last argument of fork command\n" >&2
+  printf "-a option will redirect data as last argument of fork command\n" >&2
+  printf "-A rn special script in basicscan_fork\n" >&2
+  printf "-h shows this text\n" >&2
+  printf "-o instead of running basicscan_fork\n" >&2
+  printf "pass data unix sockets to your own script \n" >&2
+  printf "It will be run like this:\n" >&2
+  printf "your_script socket_loaddata socket_savedata forknumber\n" >&2
+  printf "You can't have both options -s and -a, also -o must be alone\n\n" >&2
+  printf "Script that will generate data\n\n" >&2
+  printf "Script that will be forked and use passed data\n\n" >&2
+  printf "Number of forks.\n\n" >&2
+  printf "Script to run one time on each fork creation\n" >&2
+  printf "It is a special argument you pass only when option A is passed\n" >&2
+  printf "It's returned data is passed to each scripts that use data\n" >&2
+  printf "Only forknumber is passed to one time run script\n" >&2
   exit
 
 }
 
 if test -z "$1"
 then
-  noarg
+  badarg
 fi
-loadscript="$1"
+opt="$1"
 
 if test -z "$2"
 then
-  noarg
+  badarg
 fi
-forkscript="$2"
+loadscript="$2"
 
 if test -z "$3"
 then
-  noarg
+  badarg
 fi
-forknum="$3"
+forkscript="$3"
 
 if test -z "$4"
 then
-  noarg
+  badarg
 fi
-opt="$4"
+forknum="$4"
+specscript=''
 
-if ! [[ $opt == '-o' || $opt == '-s' ]]
+optstr="$( optchk "$opt" 'asoAh' )" || badarg
+
+opt=0
+USEOWN=0
+
+[[ $optstr == *'h'* ]] && badarg
+if [[ $optstr == *'o'* ]]
 then
-  noarg
+
+  [[ $optstr != 'o' ]] && badarg
+  USEOWN=1
+
+else
+
+  [[ $optstr == *'a'* ]]  && [[ $optstr == *'s'* ]] && badarg
+  [[ $optstr == *'a'* ]] && opt='a'
+  [[ $optstr == *'s'* ]] && opt='s'
+  if [[ $optstr == *'A'* ]] 
+  then 
+
+   if test -z "$5"
+   then
+     badarg
+   fi
+   specscript="$5"
+   opt="$opt"'A'
+
+  fi
+
 fi
+
+
 
 # !!! TODO check if forknum is number
 # TODO make it number use as port and name as sun
@@ -89,7 +139,13 @@ while (( "$started_forks" <= "$forknum" ))
 do
 
 	started_forks="$(( started_forks + 1 ))"
-	basicscan_fork "$sun_load" "$sun_ans" "$forkscript" "$opt" &
+        if (( $USEOWN  ))
+        then
+          eval "$forkscript"' '"$sun_load"' '"$sun_ans"' '"$started_forks" &
+        else
+	    basicscan_fork "$opt" "$forkscript" "$sun_load" "$sun_ans" \
+              "$started_forks" "$specscript" &
+        fi
 	sleep 1 # slow start
 	#TODO check if there are no errors on starting forks
 
@@ -101,7 +157,7 @@ do
 
 	sleep 5
 	countjobs="$( jobs -p | wc -l )"
-	if (( countjobs == 1 ))
+	if (( $countjobs == 1 ))
 	then
 		break
 	fi

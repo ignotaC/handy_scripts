@@ -123,7 +123,7 @@ sun_ans="$( mktemp )"
 
 # ASK can we protect this why with unix file from race condition ?
 # since temp file should never be removed to be safe
-rm -r "$sun_load" "$sun_ans"
+rm -r "$sun_load" "$sun_ans" # TODO - this is risky 
 
 # on error send signal. on end send signal too
 eval "$loadscript" | sndlog_data -su "$sun_load" &

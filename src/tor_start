@@ -1,0 +1,86 @@
+#!/bin/ksh
+
+#
+#
+# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+#
+# Permission to use, copy, modify, and distribute 
+# this software for any purpose with or without fee
+# is hereby granted, provided that the above copyright
+# notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR
+# DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE
+# INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE
+# FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+# DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+# OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+# CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
+# OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
+# OF THIS SOFTWARE.
+#
+#
+
+# TODO check if port
+
+port="$1"
+
+if test -z "$port"
+then
+	printf "Pass port number tor will use.\n" >&2
+	exit 1
+fi
+
+tordatadir="$( mktemp -d )"
+torrc="$( mktemp )"
+
+tf="$( mktemp )"
+# TODO  sndlog must somehow take already existing file ( race on temp file after rm )
+
+rm -f "$tf"
+
+tor --SocksPort "$port" \
+  --DataDirectory "$tordatadir" -f "$torrc" 2>&1 |& 
+torpid="$!"
+
+exec 3>&p 4<&p
+
+while true read -r line
+do
+
+  IFS= read -r line <&4
+
+  if [[ $line == *'100%'* ]]
+  then
+
+    printf "Tor running on: %s\n" "$port" >&2
+    sleep 2 # additional few sec before fin
+    printf "%s %s %s" "$torpid" "$port" "$IP"
+    exit
+
+  elif [[ $line == *'Address already in use'* ]]
+  then
+
+    port=$(( $port + 1 ))
+
+    rm -f "$torrc"
+    rm -rf "$tordatadir"
+
+    tordatadir="$( mktemp -d )"
+    torrc="$( mktemp )"
+
+    tor --SocksPort "$port" \
+      --DataDirectory "$tordatadir" -f "$torrc" 2>&1 |& 
+    torpid="$!"
+
+    exec 3>&p 4<&p
+
+  fi
+
+done
+
+printf "UNEXPECTED ERROR" >&2"
+exit 1
+
+

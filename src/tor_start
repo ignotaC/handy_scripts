@@ -55,8 +55,8 @@ do
   then
 
     printf "Tor running on: %s\n" "$port" >&2
-    sleep 2 # additional few sec before fin
-    printf "%s %s %s" "$torpid" "$port" "$IP"
+    sleep 2 # additional few sec before return success
+    printf "%s %s" "$torpid" "$port"
     exit
 
   elif [[ $line == *'Address already in use'* ]]

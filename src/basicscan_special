@@ -23,7 +23,18 @@
 #
 
 forknumber="$1"
+domain="$2"
+IP=''
 
+port=$(( 10000 + $forknumber ))
 
+if ! test -z "$domain"
+then
+  IP="$( tor-resolve "$domain" )"
+fi
 
+torans=$( tor_start "$port")
+(( $? == 0 ))  || exit 1
+
+printf "%s %s" "$torans" "$IP"
 

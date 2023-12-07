@@ -139,7 +139,7 @@ while (( "$started_forks" <= "$forknum" ))
 do
 
 	started_forks="$(( started_forks + 1 ))"
-        if (( $USEOWN  ))
+        if (( USEOWN  ))
         then
           eval "$forkscript"' '"$sun_load"' '"$sun_ans"' '"$started_forks" &
         else
@@ -157,7 +157,7 @@ do
 
 	sleep 5
 	countjobs="$( jobs -p | wc -l )"
-	if (( $countjobs == 1 ))
+	if (( countjobs == 1 ))
 	then
 		break
 	fi

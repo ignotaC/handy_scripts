@@ -29,7 +29,10 @@ tempfile="$( mktemp )"
 tempfile2="$( mktemp )"
 tempfile3="$( mktemp )"
 
-cat | httphb_split -h | lext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+cat > "$tempfile2"
+
+httphb_split -h < "$tempfile2" | lext -c 'Set-Cookie: ' ';' -l  > "$tempfile"
+httphb_split -h < "$tempfile2" | lext -c 'set-cookie: ' ';' -l  >> "$tempfile"
 
 oldcookie="$1"
 echo "$oldcookie" | lext -c 'Cookie:' '' | tr " " "\n" | tr -d ";" | awk NF > "$tempfile2"

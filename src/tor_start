@@ -80,7 +80,7 @@ do
 
 done
 
-printf "UNEXPECTED ERROR" >&2"
+printf "UNEXPECTED ERROR" >&2
 exit 1
 
 

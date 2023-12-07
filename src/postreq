@@ -24,9 +24,9 @@
 
 
 
-if [[ "$#" != 5 ]]
+if [[ "$#" != 6 ]]
 then
-  printf "Syntax: postreq url user-agent cookie IP postbody\n"
+  printf "Syntax: postreq url user-agent cookie IP port postbody\n"
   exit
 fi
 
@@ -59,7 +59,8 @@ else
   IP="$4"
 fi
 
-postbody="$5"
+port="$5"
+postbody="$6"
 
 
 req() {
@@ -77,4 +78,4 @@ printf "%s%d\n" 'Content-Length: ' "${#postbody}"
 }
 
 { req | httpreq_addcrlf; printf "%s" "$postbody"; } |\
-  nc -w 10 -c -e "$host" -X '5' -x 'localhost:9050' "$IP" '443'
+  nc -w 10 -c -e "$host" -X '5' -x 'localhost:'"$port" "$IP" '443'

@@ -1,7 +1,7 @@
 #!/bin/ksh
 
 #
-# Copyright (c) 2022 Piotr Trzpil  p.trzpil@protonmail.com
+# Copyright (c) 2022-2023 Piotr Trzpil  p.trzpil@protonmail.com
 #
 # Permission to use, copy, modify, and distribute 
 # this software for any purpose with or without fee
@@ -24,32 +24,34 @@
 
 if (( "$#" < 1 ))
 then
-  printf "%s\n" "Provide at least url"
-  printf "%s\n\n" "Syntax: torgethttp10 [option] [url]"
-  printf "%s\n" "-d"
-  printf "\t%s\n" "Disable https, use http. Still if server will"
-  printf "\t%s\n" "point on 301 to https, https will be turned on and used"
-  printf "%s\n" "-i IP"
-  printf "\t%s\n" "Pass IP of the server."
-  printf "\t%s\n" "Thanks to this there is no need for resolving IP of domain."
-  printf "\t%s\n" "This can be also usefull if we know the real IP of server."
-  printf "\t%s\n" "So we can bypass cloudflare sillyness, for example."
-  printf "%s\n" "-p port"
-  printf "\t%s\n" "Pass port http server is expected to use"
-  printf "\t%s\n" "Default is: Http = 80, https = 443"
-  printf "%s\n" "-t TORport"
-  printf "\t%s\n" "Since you can multiply tor daemons on ports."
-  printf "\t%s\n" "This options allows you to use which ever you want."
-  printf "\t%s\n" "Default is 9050."
-  printf "%s\n" "-C cookie"
-  printf "\t%s\n" "Pass cookie lines, multiply lines are fine but,"
-  printf "\t%s\n" "You need to create whole cookie header line, like this:"
-  printf "\t\t%s\n" "Cookie: some=stuff"
-  printf "%s\n" "-U user-agent"
-  printf "\t%s\n" "Define what ever user agent you want to use"
-  printf "%s\n" "-H line"
-  printf "\t%s\n" "Add this line on end of http header"
-  exit
+  printf "%s\n" "Provide at least url" >&2
+  printf "%s\n\n" "Syntax: torgethttp10 [option] [url]" >&2
+  printf "%s\n" "-d" >&2
+  printf "\t%s\n" "Disable https, use http. Still if server will" >&2
+  printf "\t%s\n" "point on 301 to https, https will be turned on and used" >&2
+  printf "%s\n" "-i IP" >&2
+  printf "\t%s\n" "Pass IP of the server." >&2
+  printf "\t%s\n" "So there is no need for resolving IP of domain." >&2
+  printf "\t%s\n" "This can be usefull if we know the real IP of server." >&2
+  printf "\t%s\n" "So we can bypass cloudflare sillyness, for example." >&2
+  printf "%s\n" "-p port" >&2
+  printf "\t%s\n" "Pass port http server is expected to use" >&2
+  printf "\t%s\n" "Default is: Http = 80, https = 443" >&2
+  printf "%s\n" "-t TORport" >&2
+  printf "\t%s\n" "Since you can multiply tor daemons on ports." >&2
+  printf "\t%s\n" "This options allows you to use which ever you want." >&2
+  printf "\t%s\n" "Default is 9050." >&2
+  printf "%s\n" "-C cookie" >&2
+  printf "\t%s\n" "Pass cookie lines, multiply lines are fine but," >&2
+  printf "\t%s\n" "You need to create whole cookie header line, like this:" >&2
+  printf "\t\t%s\n" "Cookie: some=stuff" >&2
+  printf "%s\n" "-U user-agent" >&2
+  printf "\t%s\n" "Define what ever user agent you want to use" >&2
+  printf "%s\n" "-H line" >&2
+  printf "\t%s\n" "Add this line on end of http header" >&2
+  printf "%s\n" "-h" >&2
+  printf "\t%s\n" "print http header you would use and leave" >&2
+  exit 1
 fi
 
 ua='' # if not set let it be empty, it should be set at all times anyway
@@ -59,8 +61,9 @@ port=''
 TORport='9050' #that is default, ofc you need tor daemon enabled
 httpsON=1
 HTTP_req_end=''
+show_HTTP=0
 
-while getopts di:p:t:C:U:H: optchr
+while getopts dhi:p:t:C:U:H: optchr
 do
 
   case "$optchr" in
@@ -71,6 +74,7 @@ do
     C) cookie="$OPTARG" ;;
     U) ua="$OPTARG" ;;
     H) HTTP_req_end="$( printf "%s\n%s" "$HTTP_req_end" "$OPTARG" )" ;;
+    h) show_HTTP=1 ;;
     ?) exit ;;
   esac
 
@@ -116,6 +120,26 @@ fi
 }
 
 setreq
+req() {
+
+printf "GET %s HTTP/1.0\n" "$path"
+printf "Host: %s\n" "$host"
+printf "User-Agent: %s\n" "$ua"
+printf "%s\n" "$cookie"
+printf  "%s\n" 'Accept: text/html,application/xhtml+xml'\
+',application/xml;q=0.9,image/webp,*/*;q=0.8'
+printf "%s\n" 'Accept-Language: en-US,en;q=0.5'
+printf "%s\n" "$HTTP_req_end"
+
+}
+
+if (( show_HTTP == 1 ))
+then
+
+  req | awk NF
+  exit
+
+fi
 
 #resolv empty
 if [ ! "$IP" ]
@@ -136,18 +160,6 @@ else
   fi
 fi
 
-req() {
-
-printf "GET %s HTTP/1.0\n" "$path"
-printf "Host: %s\n" "$host"
-printf "User-Agent: %s\n" "$ua"
-printf "%s\n" "$cookie"
-printf  "%s\n" 'Accept: text/html,application/xhtml+xml'\
-',application/xml;q=0.9,image/webp,*/*;q=0.8'
-printf "%s\n" 'Accept-Language: en-US,en;q=0.5'
-printf "%s\n" "$HTTP_req_end"
-
-}
 
 tempfile="$( mktemp )"
 tempfile2="$( mktemp )"
@@ -156,7 +168,8 @@ while true
 do
  
   req | httpreq_addcrlf |
-  nc -w '10' "${httpscmd[@]}" -X '5' -x 'localhost:'"$TORport" "$IP" "$port" > "$tempfile"
+  nc -w '10' "${httpscmd[@]}" -X '5' -x 'localhost:'"$TORport" \
+    "$IP" "$port" > "$tempfile" || { rm -f "$tempfile" "$tempfile2"; exit 1; }
   httphb_split -h < "$tempfile" > "$tempfile2"
   
   url="$host"'/'"$( lext -c 'Location: ' '' < "$tempfile2" | tr -d '\r\n' )"

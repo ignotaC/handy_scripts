@@ -155,3 +155,5 @@ inside the directory of your makefile.
     Example of using it:  
   >`ffmpeg_fullsupformat`  
 
+8.  **html_gettag** [ option ]
+

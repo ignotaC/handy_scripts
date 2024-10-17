@@ -31,7 +31,7 @@ pkg_add tor-browsera
 
 pkg_add fvwm2
 pkg_add feh
-pkg_add compton
+pkg_add picom
 pkg_add xdotool
 
 pkg_add cups
